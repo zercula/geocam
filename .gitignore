@@ -1,0 +1,4 @@
+# собирается в CI из app/src/main/assets/index.html
+ios/RadulLiman/index.html
+ios/RadulLiman.xcodeproj/
+ios/build/

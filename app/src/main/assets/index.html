@@ -6,9 +6,11 @@
 <meta name="theme-color" content="#14181a">
 <title>Радуль Лиман</title>
 <style>
-:root{color-scheme:dark;--bg:#14181a;--panel:rgba(14,18,20,.72);--fg:#f2efe6;--dim:#a9b0aa;--sig:#ff8a3d;--card:#20272a;--line:#3a4448;--bad:#ff6b5e}
+:root{color-scheme:dark;--bg:#14181a;--panel:rgba(14,18,20,.72);--fg:#f2efe6;--dim:#a9b0aa;--sig:#ff8a3d;--card:#20272a;--line:#3a4448;--bad:#ff6b5e;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px)}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",Roboto,system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+html{touch-action:manipulation}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",Roboto,system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 #app{position:relative;height:100%}
 video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
@@ -17,29 +19,29 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 svg{display:block}
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #xh{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
-#stat{position:absolute;left:10px;right:68px;top:10px;padding:8px 12px;border-radius:6px;background:var(--panel);font-size:14px;display:none;z-index:5}
-#tools{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:10px;z-index:4}
+#stat{position:absolute;left:calc(10px + var(--sl));right:calc(68px + var(--sr));top:calc(10px + var(--st));padding:8px 12px;border-radius:6px;background:var(--panel);font-size:14px;display:none;z-index:5}
+#tools{position:absolute;top:calc(10px + var(--st));right:calc(10px + var(--sr));display:flex;flex-direction:column;gap:10px;z-index:4}
 .rb{width:46px;height:46px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
 .rb[aria-pressed=true]{background:var(--sig);color:#14181a}
-#xp{position:absolute;top:10px;right:66px;width:min(270px,calc(100% - 80px));background:rgba(14,18,20,.9);border-radius:8px;padding:12px;display:none;flex-direction:column;gap:10px;z-index:4}
-#hud{position:absolute;left:10px;right:10px;bottom:118px;background:var(--panel);border-left:4px solid var(--sig);border-radius:6px;padding:10px 12px;backdrop-filter:blur(4px)}
+#xp{position:absolute;top:calc(10px + var(--st));right:calc(66px + var(--sr));width:min(270px,calc(100% - 80px));background:rgba(14,18,20,.9);border-radius:8px;padding:12px;display:none;flex-direction:column;gap:10px;z-index:4}
+#hud{position:absolute;left:calc(10px + var(--sl));right:calc(10px + var(--sr));bottom:calc(118px + var(--sb));background:var(--panel);border-left:4px solid var(--sig);border-radius:6px;padding:10px 12px;backdrop-filter:blur(4px)}
 #coords{font-size:clamp(18px,5.4vw,26px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
 #note{display:block;width:100%;margin-top:6px;background:rgba(255,255,255,.1);border:0;border-bottom:2px solid var(--sig);border-radius:4px 4px 0 0;color:var(--fg);font:inherit;font-size:16px;padding:8px 10px}
 #note::placeholder{color:var(--dim)}
 #meta{margin-top:6px;font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1.4}
-#bar{position:absolute;left:0;right:0;bottom:0;height:108px;display:flex;align-items:center;justify-content:space-around;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+#bar{position:absolute;left:0;right:0;bottom:0;height:calc(108px + var(--sb));padding:0 var(--sr) var(--sb) var(--sl);display:flex;align-items:center;justify-content:space-around;background:linear-gradient(transparent,rgba(0,0,0,.7))}
 .side{width:64px;height:64px;border-radius:50%;background:var(--panel);font-size:13px;line-height:1.15;display:grid;place-items:center;overflow:hidden}
 .side img{width:100%;height:100%;object-fit:cover}
 #shot{width:78px;height:78px;border-radius:50%;border:4px solid var(--fg);background:var(--sig);box-shadow:inset 0 0 0 4px #14181a}
 #shot:active{transform:scale(.94)}
 .page{position:absolute;inset:0;z-index:10;background:var(--bg);display:none;flex-direction:column}
-#start{display:flex;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center}
-#lock{z-index:20;display:none;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#start{display:flex;align-items:center;justify-content:center;gap:16px;padding:calc(24px + var(--st)) calc(24px + var(--sr)) calc(24px + var(--sb)) calc(24px + var(--sl));text-align:center}
+#lock{z-index:20;display:none;align-items:center;justify-content:center;gap:14px;padding:calc(24px + var(--st)) calc(24px + var(--sr)) calc(24px + var(--sb)) calc(24px + var(--sl));text-align:center}
 #lock input{width:min(300px,100%);text-align:center}
-.phead{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-weight:700;font-size:18px}
-#vcan{flex:none;display:flex;justify-content:center;align-items:center;background:#0b0e0f;padding:6px}
-#pcv{flex:none;max-width:100%;max-height:34vh;touch-action:none;border-radius:4px}
-#vpanel,.pad{flex:1;min-height:0;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.phead{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + var(--st)) calc(12px + var(--sr)) 8px calc(12px + var(--sl));font-weight:700;font-size:18px}
+#vcan{flex:none;display:flex;justify-content:center;align-items:center;background:#0b0e0f;padding:6px calc(6px + var(--sr)) 6px calc(6px + var(--sl))}
+#pcv{flex:none;max-width:100%;max-height:40vh;touch-action:none;border-radius:4px}
+#vpanel,.pad{flex:1;min-height:0;overflow-y:auto;padding:12px calc(12px + var(--sr)) calc(12px + var(--sb)) calc(12px + var(--sl));display:flex;flex-direction:column;gap:12px}
 .trow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
 .tb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:8px;background:var(--card);font-size:11px;min-width:0;white-space:nowrap}
 .tb[aria-pressed=true]{background:var(--sig);color:#14181a}
@@ -64,8 +66,8 @@ input[type=range]:disabled{opacity:.35}
 .btn.alt{background:#2a3134;color:var(--fg)}
 .btn.danger{background:var(--bad);color:#14181a}
 .row3 .btn{padding:11px 6px;font-size:14px}
-#gh{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-size:20px;font-weight:700}
-#grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;overflow-y:auto;align-content:start;padding:0 12px 12px}
+#gh{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(10px + var(--st)) calc(12px + var(--sr)) 10px calc(12px + var(--sl));font-size:20px;font-weight:700}
+#grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;overflow-y:auto;align-content:start;padding:0 calc(12px + var(--sr)) calc(12px + var(--sb)) calc(12px + var(--sl))}
 .cell{position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--card)}
 .cell img{width:100%;height:100%;object-fit:cover;display:block}
 .chk{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.45)}
@@ -73,7 +75,7 @@ input[type=range]:disabled{opacity:.35}
 .cell[aria-pressed=true] .chk{background:var(--sig);border-color:var(--sig)}
 .cell[aria-pressed=true] .chk::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #14181a;border-width:0 3px 3px 0;transform:rotate(45deg)}
 .empty{grid-column:1/-1;color:var(--dim);margin:16px 0}
-#gbar{flex:none;display:none;gap:10px;padding:10px 12px}
+#gbar{flex:none;display:none;gap:10px;padding:10px calc(12px + var(--sr)) calc(10px + var(--sb)) calc(12px + var(--sl))}
 #gbar .btn{flex:1}
 #dlg{position:absolute;inset:0;z-index:15;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:24px}
 #dlg .card{width:min(360px,100%)}
@@ -83,6 +85,14 @@ h1{margin:0;font-size:28px;letter-spacing:-.01em}
 h2{margin:0;font-size:18px}
 p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
 #smsg{min-height:1.4em;color:var(--fg);max-width:none}
+.pad h2:not(:first-child){margin-top:10px}
+.swrow{display:flex;align-items:center;gap:12px;min-height:44px;font-size:16px}
+.swrow input{-webkit-appearance:none;appearance:none;flex:none;width:52px;height:32px;margin:0;border-radius:16px;background:#3a4448;position:relative;cursor:pointer;transition:background .15s}
+.swrow input::after{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#f2efe6;transition:transform .15s}
+.swrow input:checked{background:var(--sig)}
+.swrow input:checked::after{transform:translateX(20px);background:#14181a}
+#toast{position:absolute;left:calc(12px + var(--sl));right:calc(12px + var(--sr));top:calc(12px + var(--st));z-index:30;display:none;padding:12px 14px;border-radius:8px;border-left:4px solid var(--sig);background:rgba(14,18,20,.96);color:var(--fg);font-size:15px;line-height:1.35;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+#toast.bad{border-left-color:var(--bad)}
 </style>
 </head>
 <body>
@@ -90,6 +100,7 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
   <video id="vid" playsinline muted autoplay></video>
   <svg id="xh" aria-hidden="true"></svg>
   <div id="stat" role="status"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
   <div id="tools">
     <button class="rb" id="xtogc" aria-pressed="false" aria-label="Перекрестие по центру">
       <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg></button>
@@ -146,7 +157,7 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
       <label class="f">Координаты<input id="fc" autocomplete="off"></label>
       <label class="f">Заметка<textarea id="fn" rows="2"></textarea></label>
       <label class="f">Высота, точность, азимут<input id="fm" autocomplete="off"></label>
-      <label class="f">Дата и время<input id="ft" autocomplete="off"></label>
+      <label class="f" id="lft">Дата и время<input id="ft" autocomplete="off"></label>
       <div class="row"><button class="btn alt" id="share">Отправить</button><button class="btn danger" id="del">Удалить снимок</button></div>
     </div>
   </div>
@@ -160,6 +171,9 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
   <div id="set" class="page">
     <div class="phead"><span>Настройки</span><button class="btn alt sm" id="sclose">Закрыть</button></div>
     <div class="pad">
+      <h2>Подпись на фото</h2>
+      <label class="swrow"><input type="checkbox" id="stime" role="switch"><span>Показывать дату и время</span></label>
+      <p class="hint">Действует на экране камеры и на готовых снимках, в том числе на уже сделанных. Выключенное время не печатается на фото, но остаётся в записи и вернётся при включении.</p>
       <h2>Пароль на приложение</h2>
       <p class="hint">Пароль спрашивается при запуске и когда вы возвращаетесь в приложение больше чем через 30 секунд. Снимки на телефоне он не шифрует.</p>
       <label class="f" id="fcur">Текущий пароль<input type="password" id="spwc" autocomplete="off"></label>
@@ -189,7 +203,28 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
 <script>
 const $=id=>document.getElementById(id);
 const FF='"Segoe UI",Roboto,sans-serif';
-const NATIVE=typeof window.Android!=='undefined';
+const IOS=!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.rl);
+const NATIVE=typeof window.Android!=='undefined'||IOS;
+/* Одинаковые вызовы для Android (синхронный мост) и iOS (ответ приходит промисом) */
+const nat={
+  async save(b64,name){
+    try{
+      if(IOS)return String(await window.webkit.messageHandlers.rl.postMessage({a:'save',data:b64,name}));
+      return String(window.Android.savePhoto(b64,name));
+    }catch(e){return ''}
+  },
+  async share(b64,name){
+    if(IOS)await window.webkit.messageHandlers.rl.postMessage({a:'share',data:b64,name});
+    else window.Android.sharePhoto(b64,name);
+  },
+  del(uris){
+    if(!uris.length)return;
+    if(IOS){try{window.webkit.messageHandlers.rl.postMessage({a:'del',ids:uris})}catch(e){}}
+    else uris.forEach(u=>{try{window.Android.deletePhoto(u)}catch(e){}});
+  },
+  log(m){if(IOS){try{window.webkit.messageHandlers.rl.postMessage({a:'log',m:String(m)})}catch(e){}}}
+};
+const savedOk=r=>/^(content:|ios:)/.test(String(r));
 const vid=$('vid'),stat=$('stat'),pcv=$('pcv');
 const show=(id,f)=>{$(id).style.display=f?'flex':'none'};
 const isShown=id=>$(id).style.display==='flex';
@@ -204,14 +239,19 @@ const okColor=c=>/^#[0-9a-f]{6}$/i.test(String(c));
 let pos=null,hdg=null,camOk=false,mode=0,db=null,shots=[],cur=null,curBmp=null,saveT=0,started=false;
 let tool='select',style={color:'#ff3b30',size:30,w:6},selId=null,undo=[],drag=null,sliderDirty=false;
 const MODES=['DD','DMS'];
-const S={cross:Object.assign({on:false,size:30,w:6,color:'#ff3b30'},(lsGet('rl_set',{})||{}).cross||{})};
+const _set=lsGet('rl_set',{})||{};
+const S={cross:Object.assign({on:false,size:30,w:6,color:'#ff3b30'},_set.cross||{}),showTime:_set.showTime!==false};
 if(!okColor(S.cross.color))S.cross.color='#ff3b30';
 const saveS=()=>lsSet('rl_set',S);
 
 /* ---------- сообщения ---------- */
 const msgs={};
 function setMsg(k,t){msgs[k]=t;const s=Object.values(msgs).filter(Boolean).join(' ');stat.textContent=s;stat.style.display=s?'block':'none'}
-function flash(t){setMsg('flash',t);clearTimeout(flash.t);flash.t=setTimeout(()=>setMsg('flash',''),3000)}
+const toastEl=$('toast');
+function flash(t,bad){
+  toastEl.textContent=t;toastEl.className=bad?'bad':'';toastEl.style.display='block';
+  clearTimeout(flash.t);flash.t=setTimeout(()=>{toastEl.style.display='none'},3500);
+}
 
 /* ---------- координаты ---------- */
 function dms(v,pl,mi){const h=v<0?mi:pl;v=Math.abs(v);const d=Math.floor(v),m=Math.floor((v-d)*60),s=((v-d)*60-m)*60;
@@ -231,10 +271,27 @@ function metaText(){
 }
 function stamp(d=new Date()){return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate())+' '+z2(d.getHours())+':'+z2(d.getMinutes())+':'+z2(d.getSeconds())}
 function fname(r){const d=new Date(r.id);return 'geo_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
-function render(){const m=metaText();$('coords').textContent=coordText()||'Ожидание GPS…';$('meta').textContent=(m?m+'  ':'')+stamp()}
+function render(){
+  const m=metaText(),t=[m,S.showTime?stamp():''].filter(Boolean).join('  ');
+  $('coords').textContent=coordText()||'Ожидание GPS…';$('meta').textContent=t;$('meta').style.display=t?'':'none';
+}
 
 /* ---------- GPS и камера ---------- */
 function startGeo(){
+  if(IOS){
+    /* на iPhone координаты и компас приходят от самого приложения */
+    let first=true;
+    window.__geo=g=>{
+      pos={coords:{latitude:g.lat,longitude:g.lon,altitude:g.alt==null?null:g.alt,accuracy:g.acc==null?null:g.acc}};
+      setMsg('geo','');render();if(first){first=false;nat.log('geo '+g.lat.toFixed(6)+','+g.lon.toFixed(6))}
+    };
+    window.__hdg=h=>{hdg=((h%360)+360)%360};
+    window.__geoErr=c=>setMsg('geo',c===1
+      ?'Нет доступа к геопозиции. Разрешите её: Настройки телефона → Радуль Лиман → Геопозиция.'
+      :'Не удаётся определить координаты. Выйдите на открытое место.');
+    window.webkit.messageHandlers.rl.postMessage({a:'geo'});
+    return;
+  }
   if(!('geolocation' in navigator)){setMsg('geo','Геопозиция не поддерживается. Координаты можно вписать вручную в редакторе снимка.');return}
   navigator.geolocation.watchPosition(p=>{pos=p;setMsg('geo','');render()},e=>{
     setMsg('geo',e.code===1
@@ -243,14 +300,24 @@ function startGeo(){
   },{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   addEventListener('deviceorientationabsolute',e=>{if(e.alpha!=null){hdg=(360-e.alpha)%360}},true);
 }
+let camBusy=false;
 async function startCam(){
+  if(camBusy)return;camBusy=true;
   try{
+    if(vid.srcObject){try{vid.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}vid.srcObject=null}
     const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    vid.srcObject=s;await vid.play();camOk=true;
+    vid.srcObject=s;await vid.play();camOk=true;setMsg('cam','');
   }catch(e){
     camOk=false;
     setMsg('cam',NATIVE?'Нет доступа к камере. Разрешите её в настройках телефона. Пока кнопка снимка откроет системную камеру.':'Живое превью камеры недоступно в этом окне. Кнопка снимка откроет камеру телефона.');
-  }
+  }finally{camBusy=false}
+  nat.log('cam '+camOk);
+}
+/* после возврата в приложение камера могла остановиться */
+function camRecover(){
+  if(!NATIVE||!started||camBusy)return;
+  const t=vid.srcObject&&vid.srcObject.getVideoTracks&&vid.srcObject.getVideoTracks()[0];
+  if(!t||t.readyState==='ended'||vid.paused)startCam();
 }
 
 /* ---------- фигуры: общие размеры в долях меньшей стороны кадра ---------- */
@@ -284,23 +351,74 @@ function bbox(o,W,H){
     x0=Math.min(...xs);x1=Math.max(...xs);y0=Math.min(...ys);y1=Math.max(...ys);if(o.t==='arrow')pad+=mHead(o.size)*m*.5}
   return [x0-pad,y0-pad,x1+pad,y1+pad];
 }
-function drawSel(ctx,W,H,o){
+/* ручки: размеры в пикселях экрана, поэтому считаются через sc (пикселей снимка на пиксель экрана) */
+const HIT_PX=18,HND_R=9,HND_HIT=22;
+function circH(o,W,H,sc){
+  const m=Math.min(W,H),r=mSize(o.size)*m,cx=o.c[0]*W,cy=o.c[1]*H,mg=HND_R*sc*1.3;
+  for(const a of [-.785398,.785398,-2.356194,2.356194,0,3.141593,-1.570796,1.570796]){
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    if(x>=mg&&x<=W-mg&&y>=mg&&y<=H-mg)return [x,y];
+  }
+  return [Math.min(W-mg,Math.max(mg,cx+r*.7071)),Math.min(H-mg,Math.max(mg,cy-r*.7071))];
+}
+function hpts(o,W,H,sc){
+  if(o.t==='arrow')return [[o.a[0]*W,o.a[1]*H],[o.b[0]*W,o.b[1]*H]];
+  if(o.t==='circle')return [circH(o,W,H,sc)];
+  return [];
+}
+function hitHandle(o,p,W,H,sc){
+  const x=p[0]*W,y=p[1]*H,hr=HND_HIT*sc;
+  if(o.t==='circle'){
+    const h=circH(o,W,H,sc),dh=Math.hypot(x-h[0],y-h[1]),dc=Math.hypot(x-o.c[0]*W,y-o.c[1]*H);
+    return dh<=hr&&dh<dc?'r':null;
+  }
+  if(o.t==='arrow'){
+    const ax=o.a[0]*W,ay=o.a[1]*H,bx=o.b[0]*W,by=o.b[1]*H,len=Math.hypot(bx-ax,by-ay);
+    const lim=Math.min(hr,Math.max(HND_R*sc,len/3)),da=Math.hypot(x-ax,y-ay),db=Math.hypot(x-bx,y-by);
+    if(Math.min(da,db)>lim)return null;
+    return da<=db?'a':'b';
+  }
+  return null;
+}
+function drawSel(ctx,W,H,o,sc){
+  sc=sc||1;
   const [x0,y0,x1,y1]=bbox(o,W,H),m=Math.min(W,H);ctx.save();ctx.setLineDash([m*.015,m*.01]);
   ctx.lineWidth=m*.007;ctx.strokeStyle='rgba(0,0,0,.6)';ctx.strokeRect(x0,y0,x1-x0,y1-y0);
-  ctx.lineWidth=m*.004;ctx.strokeStyle='#ffffff';ctx.strokeRect(x0,y0,x1-x0,y1-y0);ctx.restore();
+  ctx.lineWidth=m*.004;ctx.strokeStyle='#ffffff';ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+  ctx.setLineDash([]);
+  hpts(o,W,H,sc).forEach(h=>{
+    ctx.beginPath();ctx.arc(h[0],h[1],HND_R*sc,0,Math.PI*2);
+    ctx.fillStyle='#ffffff';ctx.fill();ctx.lineWidth=2.5*sc;ctx.strokeStyle='#14181a';ctx.stroke();
+    ctx.beginPath();ctx.arc(h[0],h[1],HND_R*sc*.45,0,Math.PI*2);ctx.fillStyle='#ff8a3d';ctx.fill();
+  });
+  ctx.restore();
 }
 function dseg(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(ax+t*dx),py-(ay+t*dy))}
-function hitObj(o,p,W,H){
-  const m=Math.min(W,H),tol=Math.max(.035*m,mW(o.w)*m),x=p[0]*W,y=p[1]*H;
+function hitObj(o,p,W,H,sc){
+  const m=Math.min(W,H),tol=Math.max(.035*m,mW(o.w)*m,HIT_PX*(sc||0)),x=p[0]*W,y=p[1]*H;
   if(o.t==='cross'){const L=mSize(o.size)*m;return dseg(x,y,W/2-L,H/2,W/2+L,H/2)<=tol||dseg(x,y,W/2,H/2-L,W/2,H/2+L)<=tol}
   if(o.t==='circle')return Math.abs(Math.hypot(x-o.c[0]*W,y-o.c[1]*H)-mSize(o.size)*m)<=tol;
   if(o.t==='arrow')return dseg(x,y,o.a[0]*W,o.a[1]*H,o.b[0]*W,o.b[1]*H)<=tol;
   const ps=o.pts;for(let i=0;i<ps.length;i++){const a=ps[i],b=ps[i+1]||a;if(dseg(x,y,a[0]*W,a[1]*H,b[0]*W,b[1]*H)<=tol)return true}return false;
 }
-function moveObj(o,dx,dy){
-  if(o.t==='arrow'){o.a=[o.a[0]+dx,o.a[1]+dy];o.b=[o.b[0]+dx,o.b[1]+dy]}
-  else if(o.t==='circle')o.c=[o.c[0]+dx,o.c[1]+dy];
-  else if(o.t==='pen')o.pts=o.pts.map(p=>[p[0]+dx,p[1]+dy]);
+/* сдвиг от исходного состояния snap; фигура не уходит за края кадра */
+function ptsOf(o){return o.t==='arrow'?[o.a,o.b]:o.t==='circle'?[o.c]:o.t==='pen'?o.pts:[]}
+function applyMove(o,snap,dx,dy){
+  const ps=ptsOf(snap);if(!ps.length)return;
+  let x0=1,x1=0,y0=1,y1=0;
+  ps.forEach(q=>{x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1])});
+  dx=Math.max(-x0,Math.min(1-x1,dx));dy=Math.max(-y0,Math.min(1-y1,dy));
+  const mv=q=>[q[0]+dx,q[1]+dy];
+  if(o.t==='arrow'){o.a=mv(snap.a);o.b=mv(snap.b)}
+  else if(o.t==='circle')o.c=mv(snap.c);
+  else if(o.t==='pen')o.pts=snap.pts.map(mv);
+}
+/* что под пальцем: сначала линии сверху вниз, потом внутренность кругов (меньший круг важнее) */
+function pick(p,W,H,sc){
+  for(let i=cur.ann.length-1;i>=0;i--)if(hitObj(cur.ann[i],p,W,H,sc))return cur.ann[i];
+  const m=Math.min(W,H),x=p[0]*W,y=p[1]*H;let best=null,br=1e9;
+  cur.ann.forEach(o=>{if(o.t!=='circle')return;const r=mSize(o.size)*m;if(Math.hypot(x-o.c[0]*W,y-o.c[1]*H)<=r&&r<br){best=o;br=r}});
+  return best;
 }
 
 /* ---------- подпись на фото ---------- */
@@ -316,7 +434,7 @@ function burn(ctx,w,h,d){
   const add=(t,size,wt,col)=>{if(!t)return;ctx.font=wt+' '+size+'px '+FF;wrap(ctx,t,maxW).forEach(l=>rows.push({t:l,size,wt,col}))};
   add(d.coords,Math.round(fs*1.15),700,'#f2efe6');
   add(d.note,fs,600,'#ffd2ab');
-  add([d.meta,d.time].filter(Boolean).join('   '),Math.round(fs*.9),500,'#c9cfc9');
+  add([d.meta,S.showTime?d.time:''].filter(Boolean).join('   '),Math.round(fs*.9),500,'#c9cfc9');
   if(!rows.length)return;
   const bh=rows.reduce((s,r)=>s+r.size*1.3,0)+pad*1.6;
   ctx.fillStyle='rgba(14,18,20,.74)';ctx.fillRect(0,h-bh,w,bh);
@@ -325,11 +443,11 @@ function burn(ctx,w,h,d){
   let y=h-bh+pad*.8;
   rows.forEach(r=>{ctx.font=r.wt+' '+r.size+'px '+FF;ctx.fillStyle=r.col;ctx.fillText(r.t,x,y+r.size*.1);y+=r.size*1.3});
 }
-function drawComposite(ctx,bmp,W,H,rec,sel,prev){
+function drawComposite(ctx,bmp,W,H,rec,sel,prev,sc){
   ctx.drawImage(bmp,0,0,W,H);
   (rec.ann||[]).forEach(o=>drawObj(ctx,W,H,o));
   if(prev)drawObj(ctx,W,H,prev);
-  if(sel&&!prev)drawSel(ctx,W,H,sel);
+  if(sel&&!prev)drawSel(ctx,W,H,sel,sc);
   burn(ctx,W,H,rec);
 }
 async function renderBlob(rec){
@@ -367,6 +485,8 @@ $('xps').oninput=e=>{S.cross.size=+e.target.value;saveS();syncXp()};
 $('xpw').oninput=e=>{S.cross.w=+e.target.value;saveS();syncXp()};
 $('xtogc').onclick=()=>{S.cross.on=!S.cross.on;saveS();drawXh()};
 $('xset').onclick=()=>{const o=$('xp').style.display==='flex';$('xp').style.display=o?'none':'flex'};
+/* после закрытия клавиатуры на iPhone страница иногда остаётся сдвинутой */
+document.addEventListener('focusout',()=>setTimeout(()=>{if(window.scrollY||window.scrollX)window.scrollTo(0,0)},60));
 vid.addEventListener('loadedmetadata',drawXh);vid.addEventListener('resize',drawXh);addEventListener('resize',drawXh);
 syncXp();
 
@@ -397,26 +517,28 @@ function shoot(){
 }
 $('fileIn').addEventListener('change',async e=>{
   const f=e.target.files[0];if(!f)return;
-  const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+  let bmp;try{bmp=await createImageBitmap(f,{imageOrientation:'from-image'})}catch(_){bmp=await createImageBitmap(f)}
   const cv=document.createElement('canvas');cv.width=bmp.width;cv.height=bmp.height;
   cv.getContext('2d').drawImage(bmp,0,0);e.target.value='';addShot(cv);
 });
 
 /* ---------- редактор снимка ---------- */
-const HINTS={select:'Нажмите на фигуру, чтобы изменить цвет и размер или передвинуть её. Перекрестие всегда по центру.',arrow:'Проведите пальцем от начала стрелки к её концу.',circle:'Проведите от центра круга наружу или просто нажмите.',pen:'Рисуйте пальцем по фото.'};
+const HINTS={select:'Нажмите на фигуру, чтобы выбрать её, и тяните, чтобы передвинуть. Белые точки меняют размер: у круга радиус, у стрелки начало и конец. Перекрестие всегда по центру.',arrow:'Проведите пальцем от начала стрелки к её концу. Потом её можно подправить.',circle:'Проведите от центра круга наружу или просто нажмите. Потом его можно подправить.',pen:'Рисуйте пальцем по фото.'};
 const selObj=()=>cur&&cur.ann.find(o=>o.id===selId)||null;
 function pushUndo(){undo.push(JSON.stringify(cur.ann));if(undo.length>60)undo.shift()}
 async function openEditor(rec){
   rec.ann=rec.ann||[];rec.exported=rec.exported||[];
   cur=rec;curBmp=await createImageBitmap(rec.base);undo=[];selId=null;tool='select';drag=null;
   $('fc').value=rec.coords;$('fn').value=rec.note;$('fm').value=rec.meta;$('ft').value=rec.time;
-  syncUI();draw();show('view',true);$('vpanel').scrollTop=0;
+  $('lft').style.display=S.showTime?'':'none';
+  syncUI();draw();show('view',true);draw();$('vpanel').scrollTop=0;
 }
+function scaleOf(){const r=pcv.getBoundingClientRect();return r.width>0?pcv.width/r.width:1}
 function draw(prev){
   if(!cur||!curBmp)return;
   if(pcv.width!==curBmp.width||pcv.height!==curBmp.height){pcv.width=curBmp.width;pcv.height=curBmp.height}
   const ctx=pcv.getContext('2d');ctx.clearRect(0,0,pcv.width,pcv.height);
-  drawComposite(ctx,curBmp,pcv.width,pcv.height,cur,selObj(),prev);
+  drawComposite(ctx,curBmp,pcv.width,pcv.height,cur,selObj(),prev,scaleOf());
 }
 function syncUI(){
   document.querySelectorAll('.tb[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===tool)));
@@ -456,8 +578,9 @@ $('edelo').onclick=()=>{const o=selObj();if(!o)return;pushUndo();cur.ann=cur.ann
 $('eclr').onclick=()=>{if(!cur.ann.length)return;pushUndo();cur.ann=[];selId=null;persist();syncUI();draw()};
 
 const nrm=e=>{const r=pcv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+const cl01=v=>Math.max(0,Math.min(1,v));
 function dragPrev(){
-  if(!drag||drag.k==='move')return null;
+  if(!drag||drag.k==='move'||drag.k==='handle')return null;
   const base={id:'prev',color:style.color,size:style.size,w:style.w};
   if(drag.k==='arrow')return Object.assign(base,{t:'arrow',a:drag.a,b:drag.b});
   if(drag.k==='circle')return Object.assign(base,{t:'circle',c:drag.c,size:invSize(drag.r)});
@@ -466,10 +589,18 @@ function dragPrev(){
 pcv.addEventListener('pointerdown',e=>{
   if(!cur||e.button>0)return;e.preventDefault();
   try{pcv.setPointerCapture(e.pointerId)}catch(_){}
-  const p=nrm(e),W=pcv.width,H=pcv.height;
+  const p=nrm(e),W=pcv.width,H=pcv.height,m=Math.min(W,H),sc=scaleOf();
   if(tool==='select'){
-    let hit=null;for(let i=cur.ann.length-1;i>=0;i--){if(hitObj(cur.ann[i],p,W,H)){hit=cur.ann[i];break}}
-    selId=hit?hit.id:null;drag=hit&&hit.t!=='cross'?{k:'move',last:p,moved:false}:null;
+    const sel=selObj(),hd=sel?hitHandle(sel,p,W,H,sc):null;
+    if(hd){
+      drag={k:'handle',h:hd,start:p,moved:false};
+      if(sel.t==='arrow'){const q=sel[hd];drag.off=[q[0]-p[0],q[1]-p[1]]}
+      else{drag.r0=mSize(sel.size)*m;drag.d0=Math.hypot((p[0]-sel.c[0])*W,(p[1]-sel.c[1])*H)}
+      syncUI();draw();return;
+    }
+    const hit=pick(p,W,H,sc);
+    selId=hit?hit.id:null;
+    drag=hit&&hit.t!=='cross'?{k:'move',start:p,snap:JSON.parse(JSON.stringify(hit)),moved:false}:null;
     syncUI();draw();return;
   }
   if(tool==='arrow')drag={k:'arrow',a:p,b:p};
@@ -478,8 +609,18 @@ pcv.addEventListener('pointerdown',e=>{
   draw(dragPrev());
 });
 pcv.addEventListener('pointermove',e=>{
-  if(!drag)return;const p=nrm(e),W=pcv.width,H=pcv.height,m=Math.min(W,H);
-  if(drag.k==='move'){const o=selObj();if(!o)return;if(!drag.moved){pushUndo();drag.moved=true}moveObj(o,p[0]-drag.last[0],p[1]-drag.last[1]);drag.last=p;draw();return}
+  if(!drag)return;const p=nrm(e),W=pcv.width,H=pcv.height,m=Math.min(W,H),sc=scaleOf();
+  if(drag.k==='move'||drag.k==='handle'){
+    const o=selObj();if(!o)return;
+    if(!drag.moved){
+      if(Math.hypot((p[0]-drag.start[0])*W,(p[1]-drag.start[1])*H)<4*sc)return;
+      pushUndo();drag.moved=true;
+    }
+    if(drag.k==='move')applyMove(o,drag.snap,p[0]-drag.start[0],p[1]-drag.start[1]);
+    else if(o.t==='arrow'){const q=[cl01(p[0]+drag.off[0]),cl01(p[1]+drag.off[1])];if(drag.h==='a')o.a=q;else o.b=q}
+    else if(o.t==='circle'){const d=Math.hypot((p[0]-o.c[0])*W,(p[1]-o.c[1])*H);o.size=invSize((drag.r0+d-drag.d0)/m);syncUI()}
+    draw();return;
+  }
   if(drag.k==='arrow')drag.b=p;
   else if(drag.k==='circle')drag.r=Math.hypot((p[0]-drag.c[0])*W,(p[1]-drag.c[1])*H)/m;
   else{const l=drag.pts[drag.pts.length-1];if(Math.hypot((p[0]-l[0])*W,(p[1]-l[1])*H)>m*.004)drag.pts.push(p)}
@@ -487,44 +628,53 @@ pcv.addEventListener('pointermove',e=>{
 });
 function endDrag(){
   if(!drag)return;const d=drag;drag=null;const W=pcv.width,H=pcv.height,m=Math.min(W,H);
-  if(d.k==='move'){if(d.moved)persist();syncUI();return}
+  if(d.k==='move'||d.k==='handle'){if(d.moved)persist();syncUI();draw();return}
   let o=null;const st={color:style.color,size:style.size,w:style.w};
   if(d.k==='arrow'){if(Math.hypot((d.b[0]-d.a[0])*W,(d.b[1]-d.a[1])*H)>m*.02)o=Object.assign({t:'arrow',a:d.a,b:d.b},st)}
   else if(d.k==='circle'){o=Object.assign({t:'circle',c:d.c},st);if(d.r*m>m*.02)o.size=invSize(d.r)}
   else o=Object.assign({t:'pen',pts:d.pts.length?d.pts:[[.5,.5]]},st);
-  if(o){pushUndo();o.id=newId();cur.ann.push(o);selId=o.id;persist()}
+  if(o){pushUndo();o.id=newId();cur.ann.push(o);selId=o.id;if(o.t!=='pen')tool='select';persist()}
   syncUI();draw();
 }
 pcv.addEventListener('pointerup',endDrag);pcv.addEventListener('pointercancel',endDrag);
 
 [['fc','coords'],['fn','note'],['fm','meta'],['ft','time']].forEach(([id,k])=>$(id).addEventListener('input',e=>{cur[k]=e.target.value;draw();persist()}));
 const toB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)});
+async function closeEditor(){if(saveT)await flushSave();show('view',false);cur=null;curBmp=null;drag=null}
+let saving=false;
 $('save').onclick=async()=>{
-  const b=await renderBlob(cur),name=fname(cur);
+  const rec=cur;if(!rec||saving)return;
+  saving=true;$('save').disabled=true;let done='';
   try{
+    const b=await renderBlob(rec),name=fname(rec);
     if(NATIVE){
-      const r=String(window.Android.savePhoto(await toB64(b),name));
-      if(r.indexOf('content:')===0){cur.exported.push(r);dbPut(cur);flash('Фото сохранено в галерею, папка RadulLiman.')}
-      else flash('Не удалось сохранить фото. Проверьте свободное место.');
-      return;
+      const r=await nat.save(await toB64(b),name);
+      if(savedOk(r)){rec.exported.push(r);await dbPut(rec);done=IOS?'Фото сохранено в приложение «Фото» на телефоне.':'Фото сохранено в галерею, папка RadulLiman.'}
+      else flash('Не удалось сохранить фото. Проверьте свободное место и разрешения.',true);
+    }else{
+      const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+      if(dl){await dl.save({filename:name,data:b});done='Фото сохранено.'}
+      else{
+        const u=URL.createObjectURL(b),a=document.createElement('a');
+        a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(u),4000);done='Фото сохранено в «Загрузки».';
+      }
     }
-    const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
-    if(dl){await dl.save({filename:name,data:b});return}
-    const u=URL.createObjectURL(b),a=document.createElement('a');
-    a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u),4000);flash('Фото сохранено в «Загрузки».');
-  }catch(e){flash('Сохранение отменено или недоступно.')}
+  }catch(e){flash('Сохранение отменено или недоступно.',true)}
+  saving=false;$('save').disabled=false;
+  if(done){if(cur===rec)await closeEditor();flash(done)}
 };
 $('share').onclick=async()=>{
+  if(!cur)return;
   const b=await renderBlob(cur),name=fname(cur);
   try{
-    if(NATIVE){window.Android.sharePhoto(await toB64(b),name);return}
+    if(NATIVE){await nat.share(await toB64(b),name);return}
     const f=new File([b],name,{type:'image/jpeg'});
     if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
     else flash('Отправка недоступна. Нажмите «Сохранить».');
   }catch(e){}
 };
-$('close').onclick=async()=>{if(saveT)await flushSave();show('view',false);cur=null;curBmp=null;drag=null};
+$('close').onclick=closeEditor;
 $('del').onclick=()=>askDelete([cur],()=>{show('view',false);cur=null;curBmp=null;drag=null});
 
 /* ---------- удаление ---------- */
@@ -538,10 +688,8 @@ function askDelete(list,done){
     show('dlg',false);const wipe=hasExp&&$('dchk').checked;
     if(cur&&list.includes(cur)){clearTimeout(saveT);saveT=0}
     shots=shots.filter(s=>!list.includes(s));
-    for(const r of list){
-      if(wipe)(r.exported||[]).forEach(u=>{try{window.Android.deletePhoto(u)}catch(e){}});
-      await dbDel(r.id);dropTurl(r.id);
-    }
+    if(wipe)nat.del(list.reduce((a,r)=>a.concat(r.exported||[]),[]));
+    for(const r of list){await dbDel(r.id);dropTurl(r.id)}
     refreshThumb();if(done)done();flash(list.length===1?'Снимок удалён.':'Снимки удалены: '+list.length+'.');
   };
 }
@@ -599,17 +747,18 @@ function afterUnlock(){if(NATIVE&&!started)$('go').onclick()}
 let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)hiddenAt=Date.now();
-  else{if(hiddenAt&&Date.now()-hiddenAt>=LOCK_AFTER)lockNow();hiddenAt=0}
+  else{if(hiddenAt&&Date.now()-hiddenAt>=LOCK_AFTER)lockNow();hiddenAt=0;camRecover()}
 });
-window.__resume=ms=>{if(ms>=LOCK_AFTER)lockNow()};
+window.__resume=ms=>{if(ms>=LOCK_AFTER)lockNow();camRecover()};
 
 const smsg=t=>{$('smsg').textContent=t};
 function openSet(){
-  const has=pwSet();$('fcur').style.display=has?'flex':'none';$('sdel').style.display=has?'':'none';
+  const has=pwSet();$('stime').checked=S.showTime;$('fcur').style.display=has?'flex':'none';$('sdel').style.display=has?'':'none';
   $('ssave').textContent=has?'Сменить пароль':'Установить пароль';
   ['spwc','spw1','spw2'].forEach(i=>{$(i).value=''});smsg('');show('set',true);
 }
 $('gear').onclick=openSet;
+$('stime').onchange=e=>{S.showTime=e.target.checked;saveS();render()};
 $('sclose').onclick=()=>show('set',false);
 $('ssave').onclick=async()=>{
   if(!window.crypto||!crypto.subtle){smsg('Пароль недоступен в этом окне.');return}
@@ -647,6 +796,7 @@ window.__back=()=>{
 };
 (async()=>{
   db=await openDb();shots=(await dbAll()).sort((a,b)=>a.id-b.id);refreshThumb();
+  nat.log('ready shots='+shots.length+' secure='+window.isSecureContext+' db='+(db?1:0));
   if(pwSet())lockNow();else afterUnlock();
 })();
 </script>

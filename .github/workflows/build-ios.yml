@@ -1,0 +1,108 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Prepare project
+        run: |
+          cp app/src/main/assets/index.html ios/RadulLiman/index.html
+          cd ios && xcodegen generate
+      - name: Build (without Apple signing)
+        run: |
+          set -o pipefail
+          cd ios
+          xcodebuild -project RadulLiman.xcodeproj -scheme RadulLiman \
+            -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            2>&1 | tee ../build-ios.log
+      - name: Show build errors
+        if: failure()
+        run: |
+          msg=$(grep -E "error:|BUILD FAILED|Command .* failed" -A2 build-ios.log | head -50 | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Ошибка сборки iOS::${msg}"
+      - name: Pack IPA
+        run: |
+          APP=$(find ios/build/Build/Products -maxdepth 3 -name 'RadulLiman.app' | head -1)
+          echo "Приложение: $APP"
+          mkdir -p out/Payload
+          cp -R "$APP" out/Payload/
+          (cd out && zip -qry RadulLiman.ipa Payload)
+          ls -l out/RadulLiman.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RadulLiman-ipa
+          path: out/RadulLiman.ipa
+
+  # Пробный запуск в симуляторе iPhone: проверяет, что приложение стартует, страница загружается и
+  # координаты доходят до неё. Результат пишется в аннотации запуска. Сбой здесь не мешает выпуску IPA.
+  smoke:
+    runs-on: macos-15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Prepare project
+        run: |
+          cp app/src/main/assets/index.html ios/RadulLiman/index.html
+          cd ios && xcodegen generate
+      - name: Build for simulator
+        run: |
+          set -o pipefail
+          cd ios
+          xcodebuild -project RadulLiman.xcodeproj -scheme RadulLiman \
+            -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            2>&1 | tee ../build-sim.log
+      - name: Show build errors
+        if: failure()
+        run: |
+          msg=$(grep -E "error:|BUILD FAILED" -A2 build-sim.log | head -50 | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Ошибка сборки для симулятора::${msg}"
+      - name: Run in simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone" | head -1 | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          echo "Симулятор: $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          APP=$(find ios/build/Build/Products -maxdepth 3 -name 'RadulLiman.app' | head -1)
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl privacy "$UDID" grant location ru.geocamera.app || true
+          xcrun simctl privacy "$UDID" grant photos ru.geocamera.app || true
+          xcrun simctl location "$UDID" set 55.343434,45.343435
+          xcrun simctl launch --console "$UDID" ru.geocamera.app > console.log 2>&1 &
+          sleep 25
+          xcrun simctl io "$UDID" screenshot shot.png || true
+          pkill -f "simctl launch" || true
+          echo "--- console ---"; cat console.log || true
+          echo "--- log ---"
+          xcrun simctl spawn "$UDID" log show --last 3m --style compact --predicate 'eventMessage CONTAINS "RL:"' > rl.log 2>&1 || true
+          cat rl.log
+          lines=$( (grep -h "RL:" console.log rl.log || true) | sed 's/^.*RL: //' | sort -u | head -12 | sed ':a;N;$!ba;s/\n/%0A/g')
+          if [ -z "$lines" ]; then lines="сообщений от страницы нет"; fi
+          echo "::notice title=Запуск в симуляторе::${lines}"
+          if [ -f shot.png ]; then
+            sips -Z 320 -s format jpeg -s formatOptions 35 shot.png --out shot.jpg >/dev/null 2>&1 || true
+            if [ -f shot.jpg ]; then
+              b64=$(base64 -i shot.jpg | tr -d '\n')
+              echo "размер снимка в base64: ${#b64}"
+              i=0
+              while [ -n "$b64" ] && [ $i -lt 8 ]; do
+                echo "::notice title=shot-$i::${b64:0:3400}"
+                b64=${b64:3400}
+                i=$((i+1))
+              done
+            fi
+          fi
+          grep -q "ready" console.log rl.log
