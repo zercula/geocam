@@ -87,13 +87,13 @@ jobs:
           pkill -f "simctl launch" || true
           echo "--- console ---"; cat console.log || true
           echo "--- log ---"
-          xcrun simctl spawn "$UDID" log show --last 3m --style compact --predicate 'eventMessage CONTAINS "RL:"' > rl.log 2>&1 || true
+          xcrun simctl spawn "$UDID" log show --last 3m --style compact --predicate 'eventMessage CONTAINS " RL: "' > rl.log 2>&1 || true
           cat rl.log
-          lines=$( (grep -h "RL:" console.log rl.log || true) | sed 's/^.*RL: //' | sort -u | head -12 | sed ':a;N;$!ba;s/\n/%0A/g')
+          lines=$( (grep -h " RL: " console.log rl.log || true) | sed 's/^.* RL: //' | sort -u | head -12 | sed ':a;N;$!ba;s/\n/%0A/g')
           if [ -z "$lines" ]; then lines="сообщений от страницы нет"; fi
           echo "::notice title=Запуск в симуляторе::${lines}"
           if [ -f shot.png ]; then
-            sips -Z 320 -s format jpeg -s formatOptions 35 shot.png --out shot.jpg >/dev/null 2>&1 || true
+            sips -Z 640 -s format jpeg -s formatOptions 40 shot.png --out shot.jpg >/dev/null 2>&1 || true
             if [ -f shot.jpg ]; then
               b64=$(base64 -i shot.jpg | tr -d '\n')
               echo "размер снимка в base64: ${#b64}"
@@ -105,4 +105,4 @@ jobs:
               done
             fi
           fi
-          grep -q "ready" console.log rl.log
+          grep -q " RL: ready" console.log rl.log
