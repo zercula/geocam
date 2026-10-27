@@ -105,4 +105,4 @@ jobs:
               done
             fi
           fi
-          grep -q " RL: ready" console.log rl.log
+          grep -q " RL: ready shots=0 secure=true db=1" console.log rl.log
