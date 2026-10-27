@@ -18,8 +18,14 @@ jobs:
       - name: Build debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          set -o pipefail
+          ./gradlew assembleDebug --console=plain 2>&1 | tee build.log
+      - name: Show build errors
+        if: failure()
+        run: |
+          msg=$(grep -E "error:|What went wrong|Execution failed|FAILED|Could not" -A3 build.log | head -40 | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Ошибка сборки::${msg}"
       - uses: actions/upload-artifact@v4
         with:
-          name: GeoCamera-debug-apk
+          name: RadulLiman-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk

@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Своя иконка: прицельная сетка. Кольцо, четыре засечки и точка в центре. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#F2EFE6"
-        android:pathData="M54,30c-9.4,0 -17,7.6 -17,17c0,12.8 17,31 17,31s17,-18.2 17,-31c0,-9.4 -7.6,-17 -17,-17z" />
+        android:strokeColor="#F2EFE6"
+        android:strokeWidth="5"
+        android:pathData="M54,54m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    <path
+        android:strokeColor="#FF8A3D"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,23L54,38M54,70L54,85M23,54L38,54M70,54L85,54" />
     <path
         android:fillColor="#FF8A3D"
-        android:pathData="M54,47m-6.5,0a6.5,6.5 0,1 1,13 0a6.5,6.5 0,1 1,-13 0" />
+        android:pathData="M54,54m-4.5,0a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0" />
 </vector>

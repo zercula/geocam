@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.WindowManager;
@@ -32,9 +33,10 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * ГеоКамера: оболочка вокруг веб-страницы из assets/index.html.
- * Даёт странице камеру и GPS, сохраняет готовые фото в галерею (Pictures/GeoCamera)
- * и умеет отправлять их через системное меню «Поделиться».
+ * Радуль Лиман: оболочка вокруг веб-страницы из assets/index.html.
+ * Даёт странице камеру и GPS, сохраняет готовые фото в галерею (Pictures/RadulLiman),
+ * удаляет эти копии по запросу страницы и отправляет фото через системное меню «Поделиться».
+ * Сообщает странице, сколько приложение пробыло в фоне, чтобы страница могла запросить пароль.
  */
 public class MainActivity extends Activity {
 
@@ -46,6 +48,7 @@ public class MainActivity extends Activity {
 
     private WebView web;
     private boolean pageLoaded = false;
+    private long pausedAt = 0;
     private ValueCallback<Uri[]> fileCallback;
 
     @Override
@@ -173,6 +176,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        pausedAt = SystemClock.elapsedRealtime();
         web.onPause();
         super.onPause();
     }
@@ -181,6 +185,11 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        if (pausedAt != 0) {
+            long away = SystemClock.elapsedRealtime() - pausedAt;
+            pausedAt = 0;
+            web.evaluateJavascript("window.__resume&&window.__resume(" + away + ")", null);
+        }
     }
 
     @Override
@@ -211,7 +220,7 @@ public class MainActivity extends Activity {
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, safeName(name));
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                 values.put(MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_PICTURES + "/GeoCamera");
+                        Environment.DIRECTORY_PICTURES + "/RadulLiman");
                 values.put(MediaStore.Images.Media.IS_PENDING, 1);
                 Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                 if (uri == null) {
@@ -226,8 +235,23 @@ public class MainActivity extends Activity {
                 values.clear();
                 values.put(MediaStore.Images.Media.IS_PENDING, 0);
                 resolver.update(uri, values, null, null);
-                return "ok";
+                // Страница запоминает этот адрес, чтобы потом удалить копию из галереи.
+                return uri.toString();
             } catch (Exception e) {
+                return "error";
+            }
+        }
+
+        @JavascriptInterface
+        public String deletePhoto(String uriString) {
+            try {
+                if (uriString == null || !uriString.startsWith("content://media/")) {
+                    return "error";
+                }
+                int removed = getContentResolver().delete(Uri.parse(uriString), null, null);
+                return removed > 0 ? "ok" : "error";
+            } catch (Exception e) {
+                // Файл уже удалён или создан не этим приложением.
                 return "error";
             }
         }
