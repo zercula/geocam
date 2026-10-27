@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#14181a">
+<title>ГеоКамера</title>
+<style>
+:root{color-scheme:dark;--bg:#14181a;--panel:rgba(14,18,20,.72);--fg:#f2efe6;--dim:#a9b0aa;--sig:#ff8a3d}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Segoe UI",Roboto,system-ui,sans-serif;overflow:hidden}
+#app{position:relative;height:100%}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+#hud{position:absolute;left:10px;right:10px;bottom:118px;background:var(--panel);border-left:4px solid var(--sig);border-radius:6px;padding:10px 12px;backdrop-filter:blur(4px)}
+#coords{font-size:clamp(18px,5.4vw,26px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+#note{display:block;width:100%;margin-top:6px;background:rgba(255,255,255,.1);border:0;border-bottom:2px solid var(--sig);border-radius:4px 4px 0 0;color:var(--fg);font:inherit;font-size:16px;padding:8px 10px}
+#note::placeholder{color:var(--dim)}
+#meta{margin-top:6px;font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1.4}
+#stat{position:absolute;left:10px;right:10px;top:10px;padding:8px 12px;border-radius:6px;background:var(--panel);font-size:14px;display:none;z-index:5}
+#bar{position:absolute;left:0;right:0;bottom:0;height:108px;display:flex;align-items:center;justify-content:space-around;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.side{width:64px;height:64px;border-radius:50%;background:var(--panel);font-size:13px;line-height:1.15;display:grid;place-items:center;overflow:hidden;padding:0}
+.side img{width:100%;height:100%;object-fit:cover}
+#shot{width:78px;height:78px;border-radius:50%;border:4px solid var(--fg);background:var(--sig);box-shadow:inset 0 0 0 4px #14181a}
+#shot:active{transform:scale(.94)}
+#start,#view,#gal{position:absolute;inset:0;background:var(--bg);flex-direction:column;padding:12px}
+#start{display:flex;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center}
+#view{display:none;overflow-y:auto;gap:12px}
+#gal{display:none;gap:10px}
+#pcv{align-self:center;flex:none;max-width:100%;max-height:38vh;border-radius:6px;background:#000}
+.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--dim)}
+.f input,.f textarea{width:100%;background:#20272a;border:1px solid #3a4448;border-radius:6px;color:var(--fg);font:inherit;font-size:16px;padding:10px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:12px}
+.btn{background:var(--sig);color:#14181a;font-weight:700;padding:13px 18px;border-radius:8px;font-size:16px}
+.btn.alt{background:#2a3134;color:var(--fg)}
+#gh{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:700}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;overflow-y:auto;align-content:start}
+#grid button{aspect-ratio:1;padding:0;border-radius:6px;overflow:hidden;background:#20272a}
+#grid img{width:100%;height:100%;object-fit:cover;display:block}
+h1{margin:0;font-size:28px;letter-spacing:-.01em}
+p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
+</style>
+</head>
+<body>
+<div id="app">
+  <video id="vid" playsinline muted autoplay></video>
+  <div id="stat"></div>
+  <div id="hud">
+    <div id="coords">Ожидание GPS…</div>
+    <input id="note" placeholder="Заметка к снимку" maxlength="200" autocomplete="off" enterkeyhint="done">
+    <div id="meta"></div>
+  </div>
+  <div id="bar">
+    <button class="side" id="fmt" aria-label="Формат координат">DD</button>
+    <button id="shot" aria-label="Сделать снимок"></button>
+    <button class="side" id="thumb" aria-label="Открыть снимки">Нет<br>снимков</button>
+  </div>
+  <div id="start">
+    <h1>ГеоКамера</h1>
+    <p>Снимает местность и печатает на фото координаты точки съёмки. Разрешите доступ к камере и геопозиции.</p>
+    <button class="btn" id="go">Запустить</button>
+  </div>
+  <div id="view">
+    <canvas id="pcv"></canvas>
+    <label class="f">Координаты<input id="fc" autocomplete="off"></label>
+    <label class="f">Заметка<textarea id="fn" rows="2"></textarea></label>
+    <label class="f">Высота, точность, азимут<input id="fm" autocomplete="off"></label>
+    <label class="f">Дата и время<input id="ft" autocomplete="off"></label>
+    <div class="row">
+      <button class="btn" id="save">Сохранить фото</button>
+      <button class="btn alt" id="share">Отправить</button>
+      <button class="btn alt" id="del">Удалить</button>
+      <button class="btn alt" id="close">Закрыть</button>
+    </div>
+  </div>
+  <div id="gal">
+    <div id="gh"><span>Снимки</span><button class="btn alt" id="gclose">Закрыть</button></div>
+    <div id="grid"></div>
+  </div>
+</div>
+<input type="file" id="fileIn" accept="image/*" capture="environment" hidden>
+<script>
+const $=id=>document.getElementById(id);
+const vid=$('vid'),stat=$('stat'),FF='"Segoe UI",Roboto,sans-serif';
+let pos=null,hdg=null,camOk=false,mode=0,db=null,shots=[],cur=null,curBmp=null,saveT=0;
+const urls={},MODES=['DD','DMS'];
+const NATIVE=typeof window.Android!=='undefined';
+
+/* ---------- координаты ---------- */
+function dms(v,pl,mi){const h=v<0?mi:pl;v=Math.abs(v);const d=Math.floor(v),m=Math.floor((v-d)*60),s=((v-d)*60-m)*60;
+  return d+'°'+String(m).padStart(2,'0')+'′'+s.toFixed(1).padStart(4,'0')+'″'+h}
+function coordText(){
+  if(!pos)return null;
+  const{latitude:la,longitude:lo}=pos.coords;
+  return mode===0?la.toFixed(6)+', '+lo.toFixed(6):dms(la,'N','S')+'  '+dms(lo,'E','W');
+}
+function metaText(){
+  if(!pos)return '';
+  const c=pos.coords,p=[];
+  if(c.altitude!=null)p.push('Выс. '+Math.round(c.altitude)+' м');
+  if(c.accuracy!=null)p.push('±'+Math.round(c.accuracy)+' м');
+  if(hdg!=null)p.push('Азимут '+Math.round(hdg)+'° '+['С','СВ','В','ЮВ','Ю','ЮЗ','З','СЗ'][Math.round(hdg/45)%8]);
+  return p.join('  ');
+}
+const z2=n=>String(n).padStart(2,'0');
+function stamp(d=new Date()){return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate())+' '+z2(d.getHours())+':'+z2(d.getMinutes())+':'+z2(d.getSeconds())}
+function fname(r){const d=new Date(r.id);return 'geo_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
+function render(){const m=metaText();$('coords').textContent=coordText()||'Ожидание GPS…';$('meta').textContent=(m?m+'  ':'')+stamp()}
+const msgs={};
+function setMsg(k,t){msgs[k]=t;const s=Object.values(msgs).filter(Boolean).join(' ');stat.textContent=s;stat.style.display=s?'block':'none'}
+const note=t=>setMsg('flash',t);
+function flash(t){note(t);setTimeout(()=>note(''),3000)}
+
+/* ---------- GPS и камера ---------- */
+function startGeo(){
+  if(!('geolocation' in navigator)){setMsg('geo','Геопозиция не поддерживается. Координаты можно вписать вручную в редакторе снимка.');return}
+  navigator.geolocation.watchPosition(p=>{pos=p;setMsg('geo','');render()},e=>{
+    setMsg('geo',e.code===1
+      ?(NATIVE?'Нет доступа к геопозиции. Разрешите её в настройках телефона и включите GPS.':'Геопозиция недоступна в этом окне. Координаты можно вписать вручную в редакторе снимка.')
+      :'Не удаётся определить координаты. Выйдите на открытое место.');
+  },{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+  addEventListener('deviceorientationabsolute',e=>{if(e.alpha!=null){hdg=(360-e.alpha)%360}},true);
+}
+async function startCam(){
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    vid.srcObject=s;await vid.play();camOk=true;
+  }catch(e){
+    camOk=false;
+    setMsg('cam',NATIVE?'Нет доступа к камере. Разрешите её в настройках телефона. Пока кнопка снимка откроет системную камеру.':'Живое превью камеры недоступно в этом окне. Кнопка снимка откроет камеру телефона.');
+  }
+}
+
+/* ---------- надпись на фото ---------- */
+function wrap(ctx,text,maxW){
+  const out=[];
+  String(text).split('\n').forEach(par=>{let line='';
+    par.split(' ').forEach(w=>{const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t});
+    out.push(line)});
+  return out;
+}
+function burn(ctx,w,h,d){
+  const fs=Math.round(Math.max(w,h)/50),pad=fs*.7,x=pad+fs*.3,maxW=w-x-pad,rows=[];
+  const add=(t,size,wt,col)=>{if(!t)return;ctx.font=wt+' '+size+'px '+FF;wrap(ctx,t,maxW).forEach(l=>rows.push({t:l,size,wt,col}))};
+  add(d.coords,Math.round(fs*1.15),700,'#f2efe6');
+  add(d.note,fs,600,'#ffd2ab');
+  add([d.meta,d.time].filter(Boolean).join('   '),Math.round(fs*.9),500,'#c9cfc9');
+  if(!rows.length)return;
+  const bh=rows.reduce((s,r)=>s+r.size*1.3,0)+pad*1.6;
+  ctx.fillStyle='rgba(14,18,20,.74)';ctx.fillRect(0,h-bh,w,bh);
+  ctx.fillStyle='#ff8a3d';ctx.fillRect(0,h-bh,fs*.3,bh);
+  ctx.textBaseline='top';
+  let y=h-bh+pad*.8;
+  rows.forEach(r=>{ctx.font=r.wt+' '+r.size+'px '+FF;ctx.fillStyle=r.col;ctx.fillText(r.t,x,y+r.size*.1);y+=r.size*1.3});
+}
+
+/* ---------- хранилище снимков ---------- */
+function openDb(){return new Promise(r=>{try{const q=indexedDB.open('geocam',1);q.onupgradeneeded=()=>q.result.createObjectStore('shots',{keyPath:'id'});q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(e){r(null)}})}
+function dbPut(x){return new Promise(r=>{if(!db)return r();try{const t=db.transaction('shots','readwrite');t.objectStore('shots').put(x);t.oncomplete=t.onerror=()=>r()}catch(e){r()}})}
+function dbDel(id){return new Promise(r=>{if(!db)return r();try{const t=db.transaction('shots','readwrite');t.objectStore('shots').delete(id);t.oncomplete=t.onerror=()=>r()}catch(e){r()}})}
+function dbAll(){return new Promise(r=>{if(!db)return r([]);try{const q=db.transaction('shots').objectStore('shots').getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>r([])}catch(e){r([])}})}
+const url=r=>urls[r.id]||(urls[r.id]=URL.createObjectURL(r.base));
+function thumb(){const l=shots[shots.length-1];$('thumb').innerHTML=l?'<img alt="" src="'+url(l)+'">':'Нет<br>снимков'}
+(async()=>{db=await openDb();shots=(await dbAll()).sort((a,b)=>a.id-b.id);thumb()})();
+
+/* ---------- съёмка ---------- */
+async function addShot(cv){
+  const base=await new Promise(r=>cv.toBlob(r,'image/jpeg',.95));
+  const rec={id:Date.now(),base,coords:coordText()||'Координаты не определены',meta:metaText(),time:stamp(),note:$('note').value.trim()};
+  $('note').value='';
+  shots.push(rec);dbPut(rec);thumb();openEditor(rec);
+}
+function shoot(){
+  if(camOk&&vid.videoWidth){
+    const cv=document.createElement('canvas');cv.width=vid.videoWidth;cv.height=vid.videoHeight;
+    cv.getContext('2d').drawImage(vid,0,0);addShot(cv);
+  }else $('fileIn').click();
+}
+$('fileIn').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+  const cv=document.createElement('canvas');cv.width=bmp.width;cv.height=bmp.height;
+  cv.getContext('2d').drawImage(bmp,0,0);e.target.value='';addShot(cv);
+});
+
+/* ---------- редактор снимка ---------- */
+async function openEditor(rec){
+  cur=rec;curBmp=await createImageBitmap(rec.base);
+  $('fc').value=rec.coords;$('fn').value=rec.note;$('fm').value=rec.meta;$('ft').value=rec.time;
+  $('del').textContent='Удалить';$('del').dataset.arm='';
+  draw();$('view').style.display='flex';$('view').scrollTop=0;
+}
+function draw(){
+  const cv=$('pcv'),ctx=cv.getContext('2d');
+  cv.width=curBmp.width;cv.height=curBmp.height;
+  ctx.drawImage(curBmp,0,0);burn(ctx,cv.width,cv.height,cur);
+}
+[['fc','coords'],['fn','note'],['fm','meta'],['ft','time']].forEach(([id,k])=>$(id).addEventListener('input',e=>{
+  cur[k]=e.target.value;draw();clearTimeout(saveT);saveT=setTimeout(()=>dbPut(cur),400);
+}));
+const outBlob=()=>new Promise(r=>$('pcv').toBlob(r,'image/jpeg',.92));
+const toB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)});
+$('save').onclick=async()=>{
+  const b=await outBlob();
+  try{
+    if(NATIVE){
+      const r=window.Android.savePhoto(await toB64(b),fname(cur));
+      flash(r==='ok'?'Фото сохранено в галерею, папка GeoCamera.':'Не удалось сохранить фото. Проверьте свободное место.');return;
+    }
+    const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+    if(dl){await dl.save({filename:fname(cur),data:b});return}
+    const u=URL.createObjectURL(b),a=document.createElement('a');
+    a.href=u;a.download=fname(cur);document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);flash('Фото сохранено в «Загрузки».');
+  }catch(e){flash('Сохранение отменено или недоступно.')}
+};
+$('share').onclick=async()=>{
+  const b=await outBlob();
+  try{
+    if(NATIVE){window.Android.sharePhoto(await toB64(b),fname(cur));return}
+    const f=new File([b],fname(cur),{type:'image/jpeg'});
+    if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
+    else flash('Отправка недоступна. Нажмите «Сохранить фото».');
+  }catch(e){}
+};
+$('del').onclick=async()=>{
+  if($('del').dataset.arm!=='1'){$('del').dataset.arm='1';$('del').textContent='Точно удалить?';return}
+  shots=shots.filter(s=>s!==cur);await dbDel(cur.id);
+  if(urls[cur.id]){URL.revokeObjectURL(urls[cur.id]);delete urls[cur.id]}
+  $('view').style.display='none';thumb();
+};
+$('close').onclick=()=>{clearTimeout(saveT);dbPut(cur);$('view').style.display='none'};
+
+/* ---------- галерея ---------- */
+function openGal(){
+  const g=$('grid');g.innerHTML='';
+  if(!shots.length)g.innerHTML='<p>Снимков пока нет. Сделайте первый кадр.</p>';
+  [...shots].reverse().forEach(r=>{
+    const b=document.createElement('button'),i=document.createElement('img');
+    i.src=url(r);i.alt='Снимок '+r.time;b.appendChild(i);
+    b.onclick=()=>{$('gal').style.display='none';openEditor(r)};g.appendChild(b);
+  });
+  $('gal').style.display='flex';
+}
+$('thumb').onclick=openGal;
+$('gclose').onclick=()=>{$('gal').style.display='none'};
+/* кнопка «Назад» в установленном приложении: сначала закрывает окна поверх камеры */
+window.__back=()=>{
+  if($('view').style.display==='flex'){$('close').onclick();return true}
+  if($('gal').style.display==='flex'){$('gclose').onclick();return true}
+  return false;
+};
+
+/* ---------- запуск ---------- */
+$('go').onclick=async()=>{startGeo();await startCam();$('start').style.display='none';render();setInterval(render,1000)};
+$('shot').onclick=shoot;
+$('fmt').onclick=()=>{mode=1-mode;$('fmt').textContent=MODES[mode];render()};
+$('note').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
+</script>
+</body>
+</html>
