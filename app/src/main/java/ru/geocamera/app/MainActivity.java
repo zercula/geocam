@@ -33,8 +33,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * Радуль Лиман: оболочка вокруг веб-страницы из assets/index.html.
- * Даёт странице камеру и GPS, сохраняет готовые фото в галерею (Pictures/RadulLiman),
+ * Калькулятор: оболочка вокруг веб-страницы из assets/index.html.
+ * Даёт странице камеру и GPS, по команде переносит готовые фото в галерею (Pictures/Photos),
  * удаляет эти копии по запросу страницы и отправляет фото через системное меню «Поделиться».
  * Сообщает странице, сколько приложение пробыло в фоне, чтобы страница могла запросить пароль.
  */
@@ -220,7 +220,7 @@ public class MainActivity extends Activity {
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, safeName(name));
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                 values.put(MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_PICTURES + "/RadulLiman");
+                        Environment.DIRECTORY_PICTURES + "/Photos");
                 values.put(MediaStore.Images.Media.IS_PENDING, 1);
                 Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                 if (uri == null) {
@@ -279,7 +279,7 @@ public class MainActivity extends Activity {
                     startActivity(Intent.createChooser(send, "Отправить фото"));
                 });
             } catch (Exception ignored) {
-                // Отправка не удалась: страница ничего не покажет, пользователь может нажать «Сохранить фото».
+                // Отправка не удалась: страница ничего не покажет, пользователь может перенести фото в галерею.
             }
         }
     }

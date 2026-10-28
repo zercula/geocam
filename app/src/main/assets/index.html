@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#14181a">
-<title>Радуль Лиман</title>
+<title>Калькулятор</title>
 <style>
 :root{color-scheme:dark;--bg:#14181a;--panel:rgba(14,18,20,.72);--fg:#f2efe6;--dim:#a9b0aa;--sig:#ff8a3d;--card:#20272a;--line:#3a4448;--bad:#ff6b5e;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px)}
 *{box-sizing:border-box}
@@ -93,6 +93,21 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
 .swrow input:checked::after{transform:translateX(20px);background:#14181a}
 #toast{position:absolute;left:calc(12px + var(--sl));right:calc(12px + var(--sr));top:calc(12px + var(--st));z-index:30;display:none;padding:12px 14px;border-radius:8px;border-left:4px solid var(--sig);background:rgba(14,18,20,.96);color:var(--fg);font-size:15px;line-height:1.35;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.5)}
 #toast.bad{border-left-color:var(--bad)}
+.exp{position:absolute;left:6px;bottom:6px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.6);color:#fff;font-size:11px}
+#gbar .btn{padding:13px 8px;font-size:15px}
+/* калькулятор на входе */
+#calc{z-index:40;background:#000;color:#fff;justify-content:flex-end;padding:calc(12px + var(--st)) calc(14px + var(--sr)) calc(18px + var(--sb)) calc(14px + var(--sl));gap:14px}
+#cdisp{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;padding:0 8px;overflow:hidden}
+#cprev{min-height:1.4em;font-size:22px;color:#8e8e93;white-space:nowrap;font-variant-numeric:tabular-nums}
+#cmain{font-size:76px;font-weight:300;line-height:1.1;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#ckeys{flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:440px;align-self:center}
+.ck{aspect-ratio:1;border-radius:50%;background:#333;color:#fff;font-size:32px;display:grid;place-items:center}
+.ck:active{filter:brightness(1.35)}
+.ck.fn{background:#a5a5a5;color:#000;font-size:28px}
+.ck.o{background:#ff9f0a;font-size:36px}
+.ck.z{grid-column:span 2;aspect-ratio:auto;border-radius:999px;justify-items:start;padding-left:30px}
+#setup{z-index:41;align-items:center;justify-content:center;gap:14px;padding:calc(24px + var(--st)) calc(24px + var(--sr)) calc(24px + var(--sb)) calc(24px + var(--sl));text-align:center}
+#setup .f{width:min(300px,100%);text-align:left}
 </style>
 </head>
 <body>
@@ -106,8 +121,10 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
       <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg></button>
     <button class="rb" id="xset" aria-label="Размер и цвет перекрестия">
       <svg class="ic" viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></button>
-    <button class="rb" id="gear" aria-label="Пароль и настройки">
-      <svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+    <button class="rb" id="gear" aria-label="Код входа и настройки">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+    <button class="rb" id="hide" aria-label="Скрыть: показать калькулятор">
+      <svg class="ic" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h0M12 11h0M16 11h0M8 15h0M12 15h0M16 15h0M8 19h0M12 19h0M16 19h0"/></svg></button>
   </div>
   <div id="xp">
     <div class="hint">Перекрестие по центру кадра</div>
@@ -127,13 +144,13 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
   </div>
 
   <div id="start" class="page">
-    <h1>Радуль Лиман</h1>
+    <h1>Камера</h1>
     <p>Снимает местность и печатает на фото координаты точки съёмки. Разрешите доступ к камере и геопозиции.</p>
     <button class="btn" id="go">Запустить</button>
   </div>
 
   <div id="view" class="page">
-    <div class="phead"><button class="btn alt sm" id="close">Закрыть</button><span>Снимок</span><button class="btn sm" id="save">Сохранить</button></div>
+    <div class="phead"><button class="btn alt sm" id="close">Закрыть</button><span>Снимок</span><button class="btn sm" id="save">Готово</button></div>
     <div id="vcan"><canvas id="pcv"></canvas></div>
     <div id="vpanel">
       <div class="trow" role="toolbar" aria-label="Инструменты">
@@ -156,16 +173,17 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
       </div>
       <label class="f">Координаты<input id="fc" autocomplete="off"></label>
       <label class="f">Заметка<textarea id="fn" rows="2"></textarea></label>
-      <label class="f">Высота, точность, азимут<input id="fm" autocomplete="off"></label>
+      <label class="f">Высота и точность<input id="fm" autocomplete="off"></label>
       <label class="f" id="lft">Дата и время<input id="ft" autocomplete="off"></label>
-      <div class="row"><button class="btn alt" id="share">Отправить</button><button class="btn danger" id="del">Удалить снимок</button></div>
+      <p class="hint" id="estate"></p>
+      <div class="row"><button class="btn" id="export">В галерею телефона</button><button class="btn alt" id="share">Отправить</button><button class="btn danger" id="del">Удалить снимок</button></div>
     </div>
   </div>
 
   <div id="gal" class="page">
     <div id="gh"><span id="gt">Снимки</span><div class="row"><button class="btn alt sm" id="gsel">Выбрать</button><button class="btn alt sm" id="gclose">Закрыть</button></div></div>
     <div id="grid"></div>
-    <div id="gbar"><button class="btn alt" id="gall">Выбрать все</button><button class="btn danger" id="gdel" disabled>Удалить</button></div>
+    <div id="gbar"><button class="btn alt" id="gall">Все</button><button class="btn" id="gexp" disabled>В галерею</button><button class="btn danger" id="gdel" disabled>Удалить</button></div>
   </div>
 
   <div id="set" class="page">
@@ -174,14 +192,14 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
       <h2>Подпись на фото</h2>
       <label class="swrow"><input type="checkbox" id="stime" role="switch"><span>Показывать дату и время</span></label>
       <p class="hint">Действует на экране камеры и на готовых снимках, в том числе на уже сделанных. Выключенное время не печатается на фото, но остаётся в записи и вернётся при включении.</p>
-      <h2>Пароль на приложение</h2>
-      <p class="hint">Пароль спрашивается при запуске и когда вы возвращаетесь в приложение больше чем через 30 секунд. Снимки на телефоне он не шифрует.</p>
-      <label class="f" id="fcur">Текущий пароль<input type="password" id="spwc" autocomplete="off"></label>
-      <label class="f">Новый пароль<input type="password" id="spw1" autocomplete="off"></label>
-      <label class="f">Повторите пароль<input type="password" id="spw2" autocomplete="off"></label>
-      <div class="row"><button class="btn" id="ssave">Установить пароль</button><button class="btn alt" id="sdel">Убрать пароль</button></div>
+      <h2>Код входа</h2>
+      <p class="hint">Приложение открывается как обычный калькулятор. Наберите код и нажмите «=», чтобы попасть в камеру. Калькулятор появляется при запуске, по кнопке со значком калькулятора и когда вы возвращаетесь в приложение больше чем через 30 секунд. Снимки на телефоне код не шифрует.</p>
+      <label class="f" id="fcur">Текущий код<input type="password" id="spwc" inputmode="numeric" autocomplete="off"></label>
+      <label class="f">Новый код (только цифры, от 4 до 12)<input type="password" id="spw1" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+      <label class="f">Повторите код<input type="password" id="spw2" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+      <div class="row"><button class="btn" id="ssave">Сменить код</button></div>
       <p id="smsg" role="status"></p>
-      <p class="hint warn">Забытый пароль не восстановить: придётся удалить данные приложения, и снимки пропадут.</p>
+      <p class="hint warn">Забытый код не восстановить: придётся удалить данные приложения, и снимки пропадут.</p>
     </div>
   </div>
 
@@ -191,12 +209,33 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
     <div class="row"><button class="btn danger" id="dok">Удалить</button><button class="btn alt" id="dno">Отмена</button></div>
   </div></div>
 
+  <!-- старый вход по паролю: только для паролей из версий до 2.2, потом нужно задать цифровой код -->
   <div id="lock" class="page">
-    <h1>Радуль Лиман</h1>
-    <p>Введите пароль, чтобы открыть приложение.</p>
+    <h1>Вход</h1>
+    <p>Введите старый пароль. После входа задайте цифровой код для калькулятора.</p>
     <input type="password" id="lpw" placeholder="Пароль" autocomplete="off" enterkeyhint="done">
     <button class="btn" id="lopen">Открыть</button>
     <p id="lmsg" role="status"></p>
+  </div>
+
+  <div id="setup" class="page">
+    <h1>Код входа</h1>
+    <p>Приложение будет выглядеть как калькулятор. Чтобы открыть камеру, наберите код и нажмите «=».</p>
+    <label class="f">Код (только цифры, от 4 до 12)<input type="password" id="up1" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+    <label class="f">Повторите код<input type="password" id="up2" inputmode="numeric" maxlength="12" autocomplete="off" enterkeyhint="done"></label>
+    <button class="btn" id="usave">Сохранить код</button>
+    <p id="umsg" role="status"></p>
+  </div>
+
+  <div id="calc" class="page" aria-label="Калькулятор">
+    <div id="cdisp"><div id="cprev"></div><div id="cmain" role="status" aria-live="polite">0</div></div>
+    <div id="ckeys">
+      <button class="ck fn" data-k="c">AC</button><button class="ck fn" data-k="b" aria-label="Стереть">⌫</button><button class="ck fn" data-k="%">%</button><button class="ck o" data-k="/" aria-label="Делить">÷</button>
+      <button class="ck" data-k="7">7</button><button class="ck" data-k="8">8</button><button class="ck" data-k="9">9</button><button class="ck o" data-k="*" aria-label="Умножить">×</button>
+      <button class="ck" data-k="4">4</button><button class="ck" data-k="5">5</button><button class="ck" data-k="6">6</button><button class="ck o" data-k="-" aria-label="Минус">−</button>
+      <button class="ck" data-k="1">1</button><button class="ck" data-k="2">2</button><button class="ck" data-k="3">3</button><button class="ck o" data-k="+" aria-label="Плюс">+</button>
+      <button class="ck z" data-k="0">0</button><button class="ck" data-k="." aria-label="Запятая">,</button><button class="ck o" data-k="=" aria-label="Равно">=</button>
+    </div>
   </div>
 </div>
 <input type="file" id="fileIn" accept="image/*" capture="environment" hidden>
@@ -236,7 +275,7 @@ const COLORS=['#ff3b30','#ff8a3d','#ffd60a','#34c759','#32d3ff','#3b82ff','#ffff
 const CNAMES=['Красный','Оранжевый','Жёлтый','Зелёный','Голубой','Синий','Белый','Чёрный'];
 const okColor=c=>/^#[0-9a-f]{6}$/i.test(String(c));
 
-let pos=null,hdg=null,camOk=false,mode=0,db=null,shots=[],cur=null,curBmp=null,saveT=0,started=false;
+let pos=null,camOk=false,mode=0,db=null,shots=[],cur=null,curBmp=null,saveT=0,started=false;
 let tool='select',style={color:'#ff3b30',size:30,w:6},selId=null,undo=[],drag=null,sliderDirty=false;
 const MODES=['DD','DMS'];
 const _set=lsGet('rl_set',{})||{};
@@ -265,12 +304,13 @@ function metaText(){
   if(!pos)return '';
   const c=pos.coords,p=[];
   if(c.altitude!=null)p.push('Выс. '+Math.round(c.altitude)+' м');
-  if(c.accuracy!=null)p.push('±'+Math.round(c.accuracy)+' м');
-  if(hdg!=null)p.push('Азимут '+Math.round(hdg)+'° '+['С','СВ','В','ЮВ','Ю','ЮЗ','З','СЗ'][Math.round(hdg/45)%8]);
+  if(c.accuracy!=null)p.push('Точность ±'+Math.round(c.accuracy)+' м');
   return p.join('  ');
 }
+/* снимки из прошлых версий: убрать азимут из подписи */
+const noAzimuth=t=>String(t||'').replace(/\s*Азимут\s+\d+°(\s+[СЮВЗ]{1,2})?/,'').trim();
 function stamp(d=new Date()){return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate())+' '+z2(d.getHours())+':'+z2(d.getMinutes())+':'+z2(d.getSeconds())}
-function fname(r){const d=new Date(r.id);return 'geo_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
+function fname(r){const d=new Date(r.id);return 'IMG_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
 function render(){
   const m=metaText(),t=[m,S.showTime?stamp():''].filter(Boolean).join('  ');
   $('coords').textContent=coordText()||'Ожидание GPS…';$('meta').textContent=t;$('meta').style.display=t?'':'none';
@@ -285,9 +325,8 @@ function startGeo(){
       pos={coords:{latitude:g.lat,longitude:g.lon,altitude:g.alt==null?null:g.alt,accuracy:g.acc==null?null:g.acc}};
       setMsg('geo','');render();if(first){first=false;nat.log('geo '+g.lat.toFixed(6)+','+g.lon.toFixed(6))}
     };
-    window.__hdg=h=>{hdg=((h%360)+360)%360};
     window.__geoErr=c=>setMsg('geo',c===1
-      ?'Нет доступа к геопозиции. Разрешите её: Настройки телефона → Радуль Лиман → Геопозиция.'
+      ?'Нет доступа к геопозиции. Разрешите её: Настройки телефона → Калькулятор → Геопозиция.'
       :'Не удаётся определить координаты. Выйдите на открытое место.');
     window.webkit.messageHandlers.rl.postMessage({a:'geo'});
     return;
@@ -298,7 +337,6 @@ function startGeo(){
       ?(NATIVE?'Нет доступа к геопозиции. Разрешите её в настройках телефона и включите GPS.':'Геопозиция недоступна в этом окне. Координаты можно вписать вручную в редакторе снимка.')
       :'Не удаётся определить координаты. Выйдите на открытое место.');
   },{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
-  addEventListener('deviceorientationabsolute',e=>{if(e.alpha!=null){hdg=(360-e.alpha)%360}},true);
 }
 let camBusy=false;
 async function startCam(){
@@ -313,9 +351,14 @@ async function startCam(){
   }finally{camBusy=false}
   nat.log('cam '+camOk);
 }
+/* пока виден калькулятор, камера выключена: не горит индикатор камеры */
+function stopCam(){
+  if(vid.srcObject){try{vid.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}vid.srcObject=null}
+  camOk=false;
+}
 /* после возврата в приложение камера могла остановиться */
 function camRecover(){
-  if(!NATIVE||!started||camBusy)return;
+  if(!started||camBusy||locked())return;
   const t=vid.srcObject&&vid.srcObject.getVideoTracks&&vid.srcObject.getVideoTracks()[0];
   if(!t||t.readyState==='ended'||vid.paused)startCam();
 }
@@ -530,7 +573,7 @@ async function openEditor(rec){
   rec.ann=rec.ann||[];rec.exported=rec.exported||[];
   cur=rec;curBmp=await createImageBitmap(rec.base);undo=[];selId=null;tool='select';drag=null;
   $('fc').value=rec.coords;$('fn').value=rec.note;$('fm').value=rec.meta;$('ft').value=rec.time;
-  $('lft').style.display=S.showTime?'':'none';
+  $('lft').style.display=S.showTime?'':'none';expState();
   syncUI();draw();show('view',true);draw();$('vpanel').scrollTop=0;
 }
 function scaleOf(){const r=pcv.getBoundingClientRect();return r.width>0?pcv.width/r.width:1}
@@ -641,29 +684,44 @@ pcv.addEventListener('pointerup',endDrag);pcv.addEventListener('pointercancel',e
 [['fc','coords'],['fn','note'],['fm','meta'],['ft','time']].forEach(([id,k])=>$(id).addEventListener('input',e=>{cur[k]=e.target.value;draw();persist()}));
 const toB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)});
 async function closeEditor(){if(saveT)await flushSave();show('view',false);cur=null;curBmp=null;drag=null}
-let saving=false;
-$('save').onclick=async()=>{
-  const rec=cur;if(!rec||saving)return;
-  saving=true;$('save').disabled=true;let done='';
-  try{
-    const b=await renderBlob(rec),name=fname(rec);
-    if(NATIVE){
-      const r=await nat.save(await toB64(b),name);
-      if(savedOk(r)){rec.exported.push(r);await dbPut(rec);done=IOS?'Фото сохранено в приложение «Фото» на телефоне.':'Фото сохранено в галерею, папка RadulLiman.'}
-      else flash('Не удалось сохранить фото. Проверьте свободное место и разрешения.',true);
-    }else{
-      const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
-      if(dl){await dl.save({filename:name,data:b});done='Фото сохранено.'}
-      else{
-        const u=URL.createObjectURL(b),a=document.createElement('a');
-        a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(u),4000);done='Фото сохранено в «Загрузки».';
+/* «Готово»: снимок остаётся только внутри приложения, в галерею телефона не попадает */
+$('save').onclick=async()=>{if(!cur)return;await closeEditor();flash('Снимок сохранён в приложении.')};
+function expState(){
+  const n=cur&&cur.exported?cur.exported.length:0;
+  $('estate').textContent=n?'Этот снимок уже есть в галерее телефона'+(n>1?' (копий: '+n+')':'')+'. Повторный перенос добавит ещё одну копию.':'Снимок хранится только в приложении.';
+}
+/* перенос в галерею телефона по команде; возвращает, сколько снимков перенесено */
+let exporting=false;
+async function exportShots(list){
+  if(exporting||!list.length)return 0;
+  exporting=true;['export','gexp'].forEach(i=>$(i).disabled=true);
+  if(cur&&list.includes(cur)&&saveT)await flushSave();
+  let ok=0,fail=false;
+  for(const rec of list){
+    try{
+      const b=await renderBlob(rec),name=fname(rec);
+      if(NATIVE){
+        const r=await nat.save(await toB64(b),name);
+        if(savedOk(r)){rec.exported=rec.exported||[];rec.exported.push(r);await dbPut(rec);ok++}else fail=true;
+      }else{
+        const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+        if(dl)await dl.save({filename:name,data:b});
+        else{
+          const u=URL.createObjectURL(b),a=document.createElement('a');
+          a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+          setTimeout(()=>URL.revokeObjectURL(u),4000);
+        }
+        ok++;
       }
-    }
-  }catch(e){flash('Сохранение отменено или недоступно.',true)}
-  saving=false;$('save').disabled=false;
-  if(done){if(cur===rec)await closeEditor();flash(done)}
-};
+    }catch(e){fail=true}
+  }
+  exporting=false;$('export').disabled=false;$('gexp').disabled=!selSet.size;
+  const where=!NATIVE?'в «Загрузки»':IOS?'в приложение «Фото»':'в галерею телефона, папка Photos';
+  if(ok)flash((ok===1?'Снимок перенесён ':'Перенесено снимков: '+ok+', ')+where+'.'+(fail?' Часть не удалось перенести.':''),fail);
+  else flash('Не удалось перенести в галерею. Проверьте свободное место и разрешения.',true);
+  return ok;
+}
+$('export').onclick=async()=>{if(cur){await exportShots([cur]);expState()}};
 $('share').onclick=async()=>{
   if(!cur)return;
   const b=await renderBlob(cur),name=fname(cur);
@@ -671,7 +729,7 @@ $('share').onclick=async()=>{
     if(NATIVE){await nat.share(await toB64(b),name);return}
     const f=new File([b],name,{type:'image/jpeg'});
     if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
-    else flash('Отправка недоступна. Нажмите «Сохранить».');
+    else flash('Отправка недоступна. Нажмите «В галерею телефона».');
   }catch(e){}
 };
 $('close').onclick=closeEditor;
@@ -702,11 +760,13 @@ function renderGal(){
   $('gsel').textContent=selMode?'Отмена':'Выбрать';$('gsel').style.display=shots.length?'':'none';
   $('gbar').style.display=selMode?'flex':'none';
   $('gdel').textContent='Удалить'+(selSet.size?' ('+selSet.size+')':'');$('gdel').disabled=!selSet.size;
+  $('gexp').textContent='В галерею'+(selSet.size?' ('+selSet.size+')':'');$('gexp').disabled=!selSet.size||exporting;
   if(!shots.length){const p=document.createElement('p');p.className='empty';p.textContent='Снимков пока нет. Сделайте первый кадр.';g.appendChild(p);return}
   [...shots].reverse().forEach(r=>{
     const b=document.createElement('button'),i=document.createElement('img');
     b.className='cell';b.dataset.id=r.id;b.setAttribute('aria-label','Снимок '+r.time);
     b.setAttribute('aria-pressed',String(selMode&&selSet.has(r.id)));i.src=turl(r);i.alt='';b.appendChild(i);
+    if(r.exported&&r.exported.length){const x=document.createElement('span');x.className='exp';x.textContent='в галерее';b.appendChild(x)}
     if(selMode){const c=document.createElement('span');c.className='chk';b.appendChild(c)}
     b.addEventListener('pointerdown',()=>{lpFired=false;clearTimeout(lpTimer);lpTimer=setTimeout(()=>{lpFired=true;selMode=true;selSet.add(r.id);renderGal()},550)});
     ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(lpTimer)));
@@ -723,27 +783,43 @@ $('thumb').onclick=openGal;
 $('gclose').onclick=()=>{selMode=false;selSet.clear();show('gal',false)};
 $('gsel').onclick=()=>{selMode=!selMode;selSet.clear();renderGal()};
 $('gall').onclick=()=>{shots.forEach(r=>selSet.add(r.id));renderGal()};
+$('gexp').onclick=async()=>{if(await exportShots(shots.filter(r=>selSet.has(r.id)))){selMode=false;selSet.clear()}renderGal()};
 $('gdel').onclick=()=>askDelete(shots.filter(r=>selSet.has(r.id)),()=>{selMode=false;selSet.clear();renderGal()});
 
-/* ---------- пароль ---------- */
+/* ---------- код входа ---------- */
 const LOCK_AFTER=30000;
 const b64=buf=>{let s='';new Uint8Array(buf).forEach(c=>s+=String.fromCharCode(c));return btoa(s)};
 const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const pwRec=()=>lsGet('rl_pw',null);
 const pwSet=()=>!!pwRec();
+/* пароль из версий до 2.2 мог быть с буквами: такой вводится на старом экране входа, потом задаётся цифровой код */
+const pwLegacy=()=>{const r=pwRec();return !!r&&!r.n};
+const codeOk=c=>/^\d{4,12}$/.test(c);
+const hasCrypto=()=>!!(window.crypto&&crypto.subtle);
 async function derive(pw,salt){
   const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
   return crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:120000},k,256);
 }
 async function pwCheck(pw){const r=pwRec();if(!r)return true;try{return b64(await derive(pw,unb64(r.s)))===r.h}catch(e){return false}}
-function lockNow(){if(!pwSet()||isShown('lock'))return;$('lpw').value='';$('lmsg').textContent='';show('lock',true);setTimeout(()=>{try{$('lpw').focus()}catch(e){}},60)}
+async function pwStore(code){const salt=crypto.getRandomValues(new Uint8Array(16));return lsSet('rl_pw',{s:b64(salt),h:b64(await derive(code,salt)),n:1})}
+const locked=()=>isShown('calc')||isShown('lock')||isShown('setup');
+function lockNow(){
+  if(!pwSet()||locked())return;
+  try{document.activeElement&&document.activeElement.blur()}catch(e){}
+  stopCam();toastEl.style.display='none';
+  if(pwLegacy()){$('lpw').value='';$('lmsg').textContent='';show('lock',true)}
+  else{calcReset();show('calc',true)}
+}
+function afterUnlock(){if(!started){if(NATIVE)$('go').onclick()}else camRecover()}
 async function tryUnlock(){
-  if(await pwCheck($('lpw').value)){show('lock',false);$('lpw').value='';$('lmsg').textContent='';afterUnlock()}
-  else{$('lmsg').textContent='Неверный пароль.';$('lpw').select()}
+  if(await pwCheck($('lpw').value)){
+    show('lock',false);$('lpw').value='';$('lmsg').textContent='';afterUnlock();
+    openSet();smsg('Задайте цифровой код: дальше приложение будет открываться как калькулятор.');
+  }else{$('lmsg').textContent='Неверный пароль.';$('lpw').select()}
 }
 $('lopen').onclick=tryUnlock;
 $('lpw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
-function afterUnlock(){if(NATIVE&&!started)$('go').onclick()}
+$('hide').onclick=()=>{if(pwSet())lockNow();else flash('Сначала задайте код входа в настройках.',true)};
 let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)hiddenAt=Date.now();
@@ -751,29 +827,115 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.__resume=ms=>{if(ms>=LOCK_AFTER)lockNow();camRecover()};
 
+/* первый запуск: задать код */
+const umsg=t=>{$('umsg').textContent=t};
+$('usave').onclick=async()=>{
+  const a=$('up1').value,b=$('up2').value;
+  if(!codeOk(a)){umsg('Код: только цифры, от 4 до 12.');return}
+  if(a!==b){umsg('Коды не совпадают.');return}
+  if(!(await pwStore(a))){umsg('Не удалось сохранить код.');return}
+  $('up1').value=$('up2').value='';umsg('');show('setup',false);afterUnlock();
+  flash('Код сохранён. Дальше приложение откроется как калькулятор: наберите код и нажмите «=».');
+};
+$('up2').addEventListener('keydown',e=>{if(e.key==='Enter')$('usave').onclick()});
+
+/* ---------- калькулятор ---------- */
+const C={x:'',prev:'',done:false,busy:false};
+const OPS='+-*/';
+const lastNum=()=>(C.x.match(/(\d*\.?\d*)$/)||['',''])[1];
+/* число без экспоненты, не длиннее 12 значащих цифр; null, если записать нельзя */
+function plain(v){
+  if(!isFinite(v))return null;
+  let s=String(parseFloat(v.toPrecision(12)));
+  if(/e/i.test(s))s=Math.abs(v)<1?v.toFixed(15).replace(/\.?0+$/,''):null;
+  return s==='-0'?'0':s;
+}
+function calcEval(x){
+  x=x.replace(/[+\-*/.]+$/,'');
+  const t=x.match(/\d+\.?\d*|\.\d+|[+\-*/]/g)||[];
+  const nums=[],ops=[];let neg=false,wantNum=true;
+  t.forEach(k=>{
+    if(wantNum){if(k==='-')neg=!neg;else if(!OPS.includes(k)){nums.push(neg?-parseFloat(k):parseFloat(k));neg=false;wantNum=false}}
+    else{ops.push(k);wantNum=true}
+  });
+  if(!nums.length)return 0;
+  const a=[nums[0]],o=[];
+  ops.forEach((op,i)=>{const n=nums[i+1];if(n===undefined)return;
+    if(op==='*')a[a.length-1]*=n;else if(op==='/')a[a.length-1]/=n;else{o.push(op);a.push(n)}});
+  return o.reduce((r,op,i)=>op==='+'?r+a[i+1]:r-a[i+1],a[0]);
+}
+const disp=x=>x.replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−').replace(/\./g,',');
+function calcRender(main){
+  const t=main!=null?main:(C.x?disp(C.x):'0'),el=$('cmain');
+  el.textContent=t;el.style.fontSize=Math.max(30,Math.min(76,76*9/Math.max(9,t.length)))+'px';
+  $('cprev').textContent=C.prev;
+}
+function calcReset(){C.x='';C.prev='';C.done=false;calcRender()}
+async function calcKey(k){
+  if(C.busy)return;
+  if(/^\d$/.test(k)){
+    if(C.done){C.x='';C.prev='';C.done=false}
+    const n=lastNum();if(n.replace('.','').length>=15)return;
+    if(n==='0')C.x=C.x.slice(0,-1);
+    C.x+=k;
+  }else if(k==='.'){
+    if(C.done){C.x='';C.prev='';C.done=false}
+    const n=lastNum();if(n.includes('.'))return;
+    C.x+=n===''?'0.':'.';
+  }else if(OPS.includes(k)){
+    C.done=false;
+    if(C.x===''){if(k==='-')C.x='-';calcRender();return}
+    if(C.x.endsWith('.'))C.x=C.x.slice(0,-1);
+    if(OPS.includes(C.x.slice(-1))){if(C.x.length===1){calcRender();return}C.x=C.x.slice(0,-1)}
+    C.x+=k;
+  }else if(k==='c'){C.x='';C.prev='';C.done=false}
+  else if(k==='b'){if(C.done){C.x='';C.prev='';C.done=false}else C.x=C.x.slice(0,-1)}
+  else if(k==='%'){
+    const n=lastNum();if(!n||n==='.')return;
+    /* как на обычном калькуляторе: 50+10% = 55, а 10% = 0,1 */
+    const pre=C.x.slice(0,-n.length),pm=/[^+\-*/][+-]$/.test(pre);
+    const v=plain(parseFloat(n)/100*(pm?calcEval(pre.slice(0,-1)):1));if(v==null)return;
+    C.x=C.x.slice(0,-n.length)+v;C.done=false;
+  }else if(k==='='){
+    /* набранный код и «=» открывают приложение */
+    if(!C.done&&codeOk(C.x)&&pwSet()&&!pwLegacy()&&hasCrypto()){
+      C.busy=true;const ok=await pwCheck(C.x);C.busy=false;
+      if(ok){calcReset();show('calc',false);afterUnlock();return}
+    }
+    if(!C.x||C.done)return;
+    const v=plain(calcEval(C.x));
+    C.prev=disp(C.x.replace(/[+\-*/.]+$/,''))+' =';C.done=true;
+    if(v==null){C.x='';calcRender('Ошибка');return}
+    C.x=v;
+  }
+  calcRender();
+}
+document.querySelectorAll('.ck').forEach(b=>b.onclick=()=>calcKey(b.dataset.k));
+addEventListener('keydown',e=>{
+  if(!isShown('calc')||e.ctrlKey||e.metaKey||e.altKey)return;
+  const m={Enter:'=','=':'=',Backspace:'b',Escape:'c',Delete:'c',',':'.','.':'.','%':'%','+':'+','-':'-','*':'*','/':'/'};
+  const k=/^\d$/.test(e.key)?e.key:m[e.key];
+  if(k){e.preventDefault();calcKey(k)}
+});
+
 const smsg=t=>{$('smsg').textContent=t};
 function openSet(){
-  const has=pwSet();$('stime').checked=S.showTime;$('fcur').style.display=has?'flex':'none';$('sdel').style.display=has?'':'none';
-  $('ssave').textContent=has?'Сменить пароль':'Установить пароль';
+  const has=pwSet();$('stime').checked=S.showTime;$('fcur').style.display=has?'flex':'none';
+  $('fcur').firstChild.textContent=pwLegacy()?'Текущий пароль':'Текущий код';
+  $('ssave').textContent=has?'Сменить код':'Задать код';
   ['spwc','spw1','spw2'].forEach(i=>{$(i).value=''});smsg('');show('set',true);
 }
 $('gear').onclick=openSet;
 $('stime').onchange=e=>{S.showTime=e.target.checked;saveS();render()};
 $('sclose').onclick=()=>show('set',false);
 $('ssave').onclick=async()=>{
-  if(!window.crypto||!crypto.subtle){smsg('Пароль недоступен в этом окне.');return}
+  if(!hasCrypto()){smsg('Код недоступен в этом окне.');return}
   const has=pwSet(),a=$('spw1').value,b=$('spw2').value;
-  if(has&&!(await pwCheck($('spwc').value))){smsg('Текущий пароль неверный.');return}
-  if(a.length<4){smsg('Пароль должен быть не короче 4 символов.');return}
-  if(a!==b){smsg('Пароли не совпадают.');return}
-  const salt=crypto.getRandomValues(new Uint8Array(16));
-  if(lsSet('rl_pw',{s:b64(salt),h:b64(await derive(a,salt))})){openSet();smsg(has?'Пароль изменён.':'Пароль установлен. Он понадобится при следующем входе.')}
-  else smsg('Не удалось сохранить пароль в этом окне.');
-};
-$('sdel').onclick=async()=>{
-  if(!(await pwCheck($('spwc').value))){smsg('Текущий пароль неверный.');return}
-  try{localStorage.removeItem('rl_pw')}catch(e){}
-  openSet();smsg('Пароль убран.');
+  if(has&&!(await pwCheck($('spwc').value))){smsg(pwLegacy()?'Текущий пароль неверный.':'Текущий код неверный.');return}
+  if(!codeOk(a)){smsg('Код: только цифры, от 4 до 12.');return}
+  if(a!==b){smsg('Коды не совпадают.');return}
+  if(await pwStore(a)){openSet();smsg(has?'Код изменён.':'Код задан.')}
+  else smsg('Не удалось сохранить код в этом окне.');
 };
 
 /* ---------- запуск ---------- */
@@ -786,7 +948,7 @@ $('fmt').onclick=()=>{mode=1-mode;$('fmt').textContent=MODES[mode];render()};
 $('note').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
 /* кнопка «Назад» в установленном приложении */
 window.__back=()=>{
-  if(isShown('lock'))return false;
+  if(locked())return false;
   if(isShown('dlg')){show('dlg',false);return true}
   if(isShown('set')){show('set',false);return true}
   if(isShown('view')){$('close').onclick();return true}
@@ -797,7 +959,10 @@ window.__back=()=>{
 (async()=>{
   db=await openDb();shots=(await dbAll()).sort((a,b)=>a.id-b.id);refreshThumb();
   nat.log('ready shots='+shots.length+' secure='+window.isSecureContext+' db='+(db?1:0));
-  if(pwSet())lockNow();else afterUnlock();
+  if(pwSet())lockNow();else if(hasCrypto())show('setup',true);else afterUnlock();
+  /* старые снимки: подпись без азимута */
+  for(const r of shots){const m=noAzimuth(r.meta);if(m!==r.meta){r.meta=m;r.thumb=await makeThumb(r);dropTurl(r.id);await dbPut(r)}}
+  refreshThumb();
 })();
 </script>
 </body>

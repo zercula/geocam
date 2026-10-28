@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Своя иконка: прицельная сетка. Кольцо, четыре засечки и точка в центре. -->
+<!-- Иконка калькулятора: тёмный корпус, табло и двенадцать кнопок, правый столбец оранжевый. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:strokeColor="#F2EFE6"
-        android:strokeWidth="5"
-        android:pathData="M54,54m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+        android:fillColor="#1C1C1E"
+        android:pathData="M41,27h26a4,4 0,0 1,4 4v46a4,4 0,0 1,-4 4h-26a4,4 0,0 1,-4 -4v-46a4,4 0,0 1,4 -4z" />
     <path
-        android:strokeColor="#FF8A3D"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:pathData="M54,23L54,38M54,70L54,85M23,54L38,54M70,54L85,54" />
+        android:fillColor="#D9E3D2"
+        android:pathData="M42.5,31h23a1.5,1.5 0,0 1,1.5 1.5v8a1.5,1.5 0,0 1,-1.5 1.5h-23a1.5,1.5 0,0 1,-1.5 -1.5v-8a1.5,1.5 0,0 1,1.5 -1.5z" />
     <path
-        android:fillColor="#FF8A3D"
-        android:pathData="M54,54m-4.5,0a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0" />
+        android:fillColor="#E5E5EA"
+        android:pathData="M41,46h6v6h-6zM51,46h6v6h-6zM41,54h6v6h-6zM51,54h6v6h-6zM41,62h6v6h-6zM51,62h6v6h-6zM41,70h6v6h-6zM51,70h6v6h-6z" />
+    <path
+        android:fillColor="#FF9500"
+        android:pathData="M61,46h6v6h-6zM61,54h6v6h-6zM61,62h6v6h-6zM61,70h6v6h-6z" />
 </vector>

@@ -5,7 +5,7 @@ import Photos
 
 /// Окно с веб-страницей приложения (тот же index.html, что и в Android-версии).
 /// Страница получает от этого класса то, что в браузере недоступно или неудобно:
-/// координаты и компас (CoreLocation), сохранение в «Фото», удаление копий, меню «Поделиться».
+/// координаты (CoreLocation), перенос в «Фото» по команде, удаление копий, меню «Поделиться».
 final class WebViewController: UIViewController,
                                WKNavigationDelegate,
                                WKUIDelegate,
@@ -124,13 +124,12 @@ final class WebViewController: UIViewController,
         }
     }
 
-    // MARK: - Координаты и компас
+    // MARK: - Координаты
 
     private func startLocation() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = kCLDistanceFilterNone
-        locationManager.headingFilter = 2
         switch locationManager.authorizationStatus {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
@@ -143,9 +142,6 @@ final class WebViewController: UIViewController,
 
     private func beginUpdates() {
         locationManager.startUpdatingLocation()
-        if CLLocationManager.headingAvailable() {
-            locationManager.startUpdatingHeading()
-        }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -168,13 +164,6 @@ final class WebViewController: UIViewController,
         if loc.horizontalAccuracy >= 0 { data["acc"] = loc.horizontalAccuracy }
         if loc.verticalAccuracy >= 0 { data["alt"] = loc.altitude }
         js("window.__geo&&window.__geo(\(jsonString(data)))")
-    }
-
-    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        let value = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
-        if value >= 0 {
-            js("window.__hdg&&window.__hdg(\(value))")
-        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
