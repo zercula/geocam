@@ -195,8 +195,8 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
       <h2>Код входа</h2>
       <p class="hint">Приложение открывается как обычный калькулятор. Наберите код и нажмите «=», чтобы попасть в камеру. Калькулятор появляется при запуске, по кнопке со значком калькулятора и когда вы возвращаетесь в приложение больше чем через 30 секунд. Снимки на телефоне код не шифрует.</p>
       <label class="f" id="fcur">Текущий код<input type="password" id="spwc" inputmode="numeric" autocomplete="off"></label>
-      <label class="f">Новый код (только цифры, от 4 до 12)<input type="password" id="spw1" inputmode="numeric" maxlength="12" autocomplete="off"></label>
-      <label class="f">Повторите код<input type="password" id="spw2" inputmode="numeric" maxlength="12" autocomplete="off"></label>
+      <label class="f">Новый код (4 цифры)<input type="password" id="spw1" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+      <label class="f">Повторите код<input type="password" id="spw2" inputmode="numeric" maxlength="4" autocomplete="off"></label>
       <div class="row"><button class="btn" id="ssave">Сменить код</button></div>
       <p id="smsg" role="status"></p>
       <p class="hint warn">Забытый код не восстановить: придётся удалить данные приложения, и снимки пропадут.</p>
@@ -221,8 +221,8 @@ p{margin:0;max-width:34ch;color:var(--dim);line-height:1.45}
   <div id="setup" class="page">
     <h1>Код входа</h1>
     <p>Приложение будет выглядеть как калькулятор. Чтобы открыть камеру, наберите код и нажмите «=».</p>
-    <label class="f">Код (только цифры, от 4 до 12)<input type="password" id="up1" inputmode="numeric" maxlength="12" autocomplete="off"></label>
-    <label class="f">Повторите код<input type="password" id="up2" inputmode="numeric" maxlength="12" autocomplete="off" enterkeyhint="done"></label>
+    <label class="f">Код (4 цифры)<input type="password" id="up1" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+    <label class="f">Повторите код<input type="password" id="up2" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="done"></label>
     <button class="btn" id="usave">Сохранить код</button>
     <p id="umsg" role="status"></p>
   </div>
@@ -794,7 +794,7 @@ const pwRec=()=>lsGet('rl_pw',null);
 const pwSet=()=>!!pwRec();
 /* пароль из версий до 2.2 мог быть с буквами: такой вводится на старом экране входа, потом задаётся цифровой код */
 const pwLegacy=()=>{const r=pwRec();return !!r&&!r.n};
-const codeOk=c=>/^\d{4,12}$/.test(c);
+const codeOk=c=>/^\d{4}$/.test(c);
 const hasCrypto=()=>!!(window.crypto&&crypto.subtle);
 async function derive(pw,salt){
   const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
@@ -831,7 +831,7 @@ window.__resume=ms=>{if(ms>=LOCK_AFTER)lockNow();camRecover()};
 const umsg=t=>{$('umsg').textContent=t};
 $('usave').onclick=async()=>{
   const a=$('up1').value,b=$('up2').value;
-  if(!codeOk(a)){umsg('Код: только цифры, от 4 до 12.');return}
+  if(!codeOk(a)){umsg('Код должен состоять из 4 цифр.');return}
   if(a!==b){umsg('Коды не совпадают.');return}
   if(!(await pwStore(a))){umsg('Не удалось сохранить код.');return}
   $('up1').value=$('up2').value='';umsg('');show('setup',false);afterUnlock();
@@ -932,7 +932,7 @@ $('ssave').onclick=async()=>{
   if(!hasCrypto()){smsg('Код недоступен в этом окне.');return}
   const has=pwSet(),a=$('spw1').value,b=$('spw2').value;
   if(has&&!(await pwCheck($('spwc').value))){smsg(pwLegacy()?'Текущий пароль неверный.':'Текущий код неверный.');return}
-  if(!codeOk(a)){smsg('Код: только цифры, от 4 до 12.');return}
+  if(!codeOk(a)){smsg('Код должен состоять из 4 цифр.');return}
   if(a!==b){smsg('Коды не совпадают.');return}
   if(await pwStore(a)){openSet();smsg(has?'Код изменён.':'Код задан.')}
   else smsg('Не удалось сохранить код в этом окне.');
