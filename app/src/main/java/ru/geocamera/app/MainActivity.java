@@ -37,7 +37,7 @@ import java.io.OutputStream;
  * Оболочка вокруг веб-страницы из assets/index.html. В списке приложений называется «Калькулятор»:
  * страница при запуске показывает рабочий калькулятор, а само приложение (Радуль Лиман) открывается
  * после набора кода и нажатия «=».
- * Даёт странице камеру и GPS, по её запросу кладёт готовые фото в галерею (Pictures/RadulLiman),
+ * Даёт странице камеру и GPS, по её запросу кладёт готовые фото в галерею (Pictures/Photos),
  * удаляет эти копии и отправляет фото через системное меню «Поделиться».
  * Сообщает странице, сколько приложение пробыло в фоне, чтобы страница могла снова показать калькулятор.
  */
@@ -227,7 +227,7 @@ public class MainActivity extends Activity {
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, safeName(name));
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                 values.put(MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_PICTURES + "/RadulLiman");
+                        Environment.DIRECTORY_PICTURES + "/Photos");
                 values.put(MediaStore.Images.Media.IS_PENDING, 1);
                 Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                 if (uri == null) {

@@ -289,6 +289,7 @@ const savedOk=r=>/^(content:|ios:)/.test(String(r));
 const vid=$('vid'),stat=$('stat'),pcv=$('pcv');
 const show=(id,f)=>{$(id).style.display=f?'flex':'none'};
 const isShown=id=>$(id).style.display==='flex';
+const covered=()=>isShown('calc')||isShown('lock')||isShown('setup');
 const z2=n=>String(n).padStart(2,'0');
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
@@ -330,7 +331,7 @@ function metaText(){
   return p.join('  ');
 }
 function stamp(d=new Date()){return d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate())+' '+z2(d.getHours())+':'+z2(d.getMinutes())+':'+z2(d.getSeconds())}
-function fname(r){const d=new Date(r.id);return 'geo_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
+function fname(r){const d=new Date(r.id);return 'IMG_'+d.getFullYear()+z2(d.getMonth()+1)+z2(d.getDate())+'_'+z2(d.getHours())+z2(d.getMinutes())+z2(d.getSeconds())+'.jpg'}
 function render(){
   const m=metaText(),t=[m,S.showTime?stamp():''].filter(Boolean).join('  ');
   $('coords').textContent=coordText()||'Ожидание GPS…';$('meta').textContent=t;$('meta').style.display=t?'':'none';
@@ -346,7 +347,7 @@ function startGeo(){
       setMsg('geo','');render();if(first){first=false;nat.log('geo '+g.lat.toFixed(6)+','+g.lon.toFixed(6))}
     };
     window.__geoErr=c=>setMsg('geo',c===1
-      ?'Нет доступа к геопозиции. Разрешите её: Настройки телефона → Радуль Лиман → Геопозиция.'
+      ?'Нет доступа к геопозиции. Разрешите её: Настройки телефона → Калькулятор → Геопозиция.'
       :'Не удаётся определить координаты. Выйдите на открытое место.');
     window.webkit.messageHandlers.rl.postMessage({a:'geo'});
     return;
@@ -372,8 +373,12 @@ async function startCam(){
   nat.log('cam '+camOk);
 }
 /* после возврата в приложение камера могла остановиться */
+function stopCam(){
+  try{vid.srcObject&&vid.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}
+  vid.srcObject=null;camOk=false;
+}
 function camRecover(){
-  if(!NATIVE||!started||camBusy)return;
+  if(!NATIVE||!started||camBusy||covered())return;
   const t=vid.srcObject&&vid.srcObject.getVideoTracks&&vid.srcObject.getVideoTracks()[0];
   if(!t||t.readyState==='ended'||vid.paused)startCam();
 }
@@ -733,7 +738,7 @@ async function toGallery(list,remove,done){
   }
   let msg='';
   if(ok){
-    const where=IOS?'в приложение «Фото»':NATIVE?'в галерею телефона (папка RadulLiman)':'в «Загрузки»';
+    const where=IOS?'в приложение «Фото»':NATIVE?'в галерею телефона (папка Photos)':'в «Загрузки»';
     msg=(ok===1?'Снимок перенесён ':'Снимки перенесены ('+ok+') ')+where+(remove?(ok===1?' и убран из приложения.':' и убраны из приложения.'):'. Копия осталась в приложении.');
   }
   if(bad)flash((msg?msg+' ':'')+'Не удалось перенести: '+bad+'. Проверьте свободное место и разрешения.',true);
@@ -929,6 +934,7 @@ function lockNow(){
   if(!pwSet()||isShown('lock')||isShown('calc'))return;
   try{document.activeElement&&document.activeElement.blur()}catch(e){}
   toastEl.style.display='none';
+  stopCam();
   const r=pwRec();
   if(r&&r.n){calcReset();show('calc',true);fitCalc();calcDraw()}
   else{$('lpw').value='';$('lmsg').textContent='';show('lock',true);setTimeout(()=>{try{$('lpw').focus()}catch(e){}},60)}
@@ -977,7 +983,7 @@ async function tryUnlock(){
 $('lopen').onclick=tryUnlock;
 $('lpw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
 $('hide').onclick=lockNow;
-function afterUnlock(){if(NATIVE&&!started)$('go').onclick()}
+function afterUnlock(){if(NATIVE&&!started)$('go').onclick();else if(started&&!camBusy)startCam()}
 let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)hiddenAt=Date.now();
