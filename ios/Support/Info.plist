@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ru</string>
 	<key>CFBundleDisplayName</key>
-	<string>Радуль Лиман</string>
+	<string>Калькулятор</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -29,7 +29,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Геопозиция нужна, чтобы напечатать на фото координаты точки съёмки.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Приложение сохраняет готовые снимки в вашу фотогалерею.</string>
+	<string>Приложение кладёт снимки в вашу фотогалерею, когда вы сами нажимаете «В галерею».</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Доступ нужен, чтобы по вашей просьбе удалить из галереи копии снимков, которые сохранило приложение.</string>
 	<key>UIApplicationSceneManifest</key>

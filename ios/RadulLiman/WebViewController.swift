@@ -5,7 +5,9 @@ import Photos
 
 /// Окно с веб-страницей приложения (тот же index.html, что и в Android-версии).
 /// Страница получает от этого класса то, что в браузере недоступно или неудобно:
-/// координаты и компас (CoreLocation), сохранение в «Фото», удаление копий, меню «Поделиться».
+/// координаты (CoreLocation), сохранение в «Фото», удаление копий, меню «Поделиться».
+/// Когда приложение уходит с экрана, окно закрывается чёрной шторкой, чтобы в переключателе приложений
+/// не было видно камеры.
 final class WebViewController: UIViewController,
                                WKNavigationDelegate,
                                WKUIDelegate,
@@ -15,6 +17,7 @@ final class WebViewController: UIViewController,
     private var web: WKWebView!
     private let locationManager = CLLocationManager()
     private var wentToBackground: Date?
+    private let cover = UIView()
     private let bgColor = UIColor(red: 20 / 255, green: 24 / 255, blue: 26 / 255, alpha: 1)
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
@@ -43,10 +46,17 @@ final class WebViewController: UIViewController,
         view.addSubview(webView)
         web = webView
 
+        cover.backgroundColor = .black
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground),
                                                name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willResignActive),
+                                               name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive),
+                                               name: UIApplication.didBecomeActiveNotification, object: nil)
         loadPage()
     }
 
@@ -74,6 +84,15 @@ final class WebViewController: UIViewController,
 
     @objc private func didEnterBackground() {
         wentToBackground = Date()
+    }
+
+    @objc private func willResignActive() {
+        cover.frame = view.bounds
+        view.addSubview(cover)
+    }
+
+    @objc private func didBecomeActive() {
+        cover.removeFromSuperview()
     }
 
     /// Страница сама решает, спрашивать ли пароль: ей нужно знать, сколько приложение пробыло в фоне.
@@ -124,13 +143,12 @@ final class WebViewController: UIViewController,
         }
     }
 
-    // MARK: - Координаты и компас
+    // MARK: - Координаты
 
     private func startLocation() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = kCLDistanceFilterNone
-        locationManager.headingFilter = 2
         switch locationManager.authorizationStatus {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
@@ -143,9 +161,6 @@ final class WebViewController: UIViewController,
 
     private func beginUpdates() {
         locationManager.startUpdatingLocation()
-        if CLLocationManager.headingAvailable() {
-            locationManager.startUpdatingHeading()
-        }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -168,13 +183,6 @@ final class WebViewController: UIViewController,
         if loc.horizontalAccuracy >= 0 { data["acc"] = loc.horizontalAccuracy }
         if loc.verticalAccuracy >= 0 { data["alt"] = loc.altitude }
         js("window.__geo&&window.__geo(\(jsonString(data)))")
-    }
-
-    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        let value = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
-        if value >= 0 {
-            js("window.__hdg&&window.__hdg(\(value))")
-        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
@@ -33,10 +34,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * Радуль Лиман: оболочка вокруг веб-страницы из assets/index.html.
- * Даёт странице камеру и GPS, сохраняет готовые фото в галерею (Pictures/RadulLiman),
- * удаляет эти копии по запросу страницы и отправляет фото через системное меню «Поделиться».
- * Сообщает странице, сколько приложение пробыло в фоне, чтобы страница могла запросить пароль.
+ * Оболочка вокруг веб-страницы из assets/index.html. В списке приложений называется «Калькулятор»:
+ * страница при запуске показывает рабочий калькулятор, а само приложение (Радуль Лиман) открывается
+ * после набора кода и нажатия «=».
+ * Даёт странице камеру и GPS, по её запросу кладёт готовые фото в галерею (Pictures/RadulLiman),
+ * удаляет эти копии и отправляет фото через системное меню «Поделиться».
+ * Сообщает странице, сколько приложение пробыло в фоне, чтобы страница могла снова показать калькулятор.
  */
 public class MainActivity extends Activity {
 
@@ -58,6 +61,10 @@ public class MainActivity extends Activity {
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
         getWindow().getDecorView().setBackgroundColor(BG);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // В списке недавних приложений не показываем снимок экрана: там была бы камера, а не калькулятор.
+            setRecentsScreenshotEnabled(false);
+        }
 
         web = new WebView(this);
         web.setBackgroundColor(BG);
